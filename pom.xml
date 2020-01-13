@@ -27,8 +27,8 @@
     <!-- the order declared in the <modules> element (https://maven.apache.org/guides/mini/guide-multiple-modules.html) -->
     <modules>
         <module>kugga-util</module>
-        <module>kugga-starter</module>
         <module>kugga-netty</module>
+        <module>kugga-starter</module>
     </modules>
 
     <!--  里面按照parent里面的dependencyManagement的版本号来判断-->

@@ -1,4 +1,4 @@
-package com.ayang818.kugga.netty;
+package com.ayang818.kugga.netty.websocket;
 
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelPipeline;
@@ -7,8 +7,6 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
-
-import java.util.HashMap;
 
 /**
  * @author 杨丰畅

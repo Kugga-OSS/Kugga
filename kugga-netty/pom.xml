@@ -21,5 +21,11 @@
             <groupId>io.netty</groupId>
             <artifactId>netty-all</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.ayang818.kugga</groupId>
+            <artifactId>kugga-util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

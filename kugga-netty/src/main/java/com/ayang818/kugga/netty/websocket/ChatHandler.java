@@ -1,13 +1,12 @@
-package com.ayang818.kugga.netty;
+package com.ayang818.kugga.netty.websocket;
 
-import io.netty.channel.Channel;
-import io.netty.channel.ChannelHandler;
+import com.ayang818.kugga.netty.dto.ChatMessageDto;
+import com.ayang818.kugga.util.GsonUtil;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.util.concurrent.EventExecutorGroup;
 import io.netty.util.concurrent.GlobalEventExecutor;
 
 /**
@@ -22,7 +21,11 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     @Override
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
-
+        ChatMessageDto chatMessage = ChatMessageDto.builder()
+                .sender(context.channel().id().asShortText())
+                .receiver("message")
+                .content(content).build();
+        channels.writeAndFlush(new TextWebSocketFrame(GsonUtil.toJsonString(chatMessage)));
     }
 
     /**
@@ -39,7 +42,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
 
     /**
      * @param ctx
-     * @description Handler生命周期的一部分，当Handler从某个pipeline删除时执行的动作，默认就是
+     * @description Handler生命周期的一部分，当Handler从某个pipeline删除时执行的动作
      * @throws Exception
      */
     @Override
