@@ -8,12 +8,12 @@
         <artifactId>kugga</artifactId>
         <version>1.0.0</version>
     </parent>
+
     <artifactId>kugga-starter</artifactId>
     <name>kugga-starter</name>
-    <description>Kugga stater</description>
-
+    <description>Kugga-stater</description>
+    <packaging>jar</packaging>
     <properties>
-        <java.version>1.8</java.version>
         <project.apiVersion>${project.version}</project.apiVersion>
     </properties>
 
@@ -42,16 +42,34 @@
         </testResources>
         <pluginManagement>
             <plugins>
+                <!--       spring-boot-maven-plugin不应该放在根目录         -->
                 <plugin>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-maven-plugin</artifactId>
                 </plugin>
+
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
                 </plugin>
             </plugins>
         </pluginManagement>
+        <plugins>
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+                <configuration>
+                    <mainClass>com.ayang818.kugga.starter.KuggaStarterApplication</mainClass>
+                </configuration>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>repackage</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+        </plugins>
     </build>
 
 </project>

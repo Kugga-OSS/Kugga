@@ -2,7 +2,6 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
-    <packaging>pom</packaging>
     <parent>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-starter-parent</artifactId>
@@ -14,6 +13,7 @@
     <version>1.0.0</version>
     <name>kugga</name>
     <description>Kugga server side</description>
+    <packaging>pom</packaging>
 
     <properties>
         <maven.compiler.target>1.8</maven.compiler.target>
@@ -26,9 +26,9 @@
 
     <!-- the order declared in the <modules> element (https://maven.apache.org/guides/mini/guide-multiple-modules.html) -->
     <modules>
+        <module>kugga-starter</module>
         <module>kugga-util</module>
         <module>kugga-netty</module>
-        <module>kugga-starter</module>
     </modules>
 
     <!--  里面按照parent里面的dependencyManagement的版本号来判断-->
@@ -106,10 +106,11 @@
 
     <build>
         <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>org.springframework.boot</groupId>-->
+<!--                <artifactId>spring-boot-maven-plugin</artifactId>-->
+<!--            </plugin>-->
+
         </plugins>
 
     </build>
