@@ -27,10 +27,8 @@ jobs:
             - v1-dependencies-
 
       - run:
-          name: package
+          name: Install artifact to local repo
           command: mvn clean install
-
-      - run: mvn dependency:offline
 
       - save_cache:
           paths:
