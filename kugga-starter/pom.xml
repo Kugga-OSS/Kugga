@@ -42,12 +42,6 @@
         </testResources>
         <pluginManagement>
             <plugins>
-                <!--       spring-boot-maven-plugin不应该放在根目录         -->
-                <plugin>
-                    <groupId>org.springframework.boot</groupId>
-                    <artifactId>spring-boot-maven-plugin</artifactId>
-                </plugin>
-
                 <plugin>
                     <artifactId>maven-resources-plugin</artifactId>
                     <version>3.0.2</version>
@@ -55,6 +49,7 @@
             </plugins>
         </pluginManagement>
         <plugins>
+            <!--       spring-boot-maven-plugin不应该放在根目录         -->
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
