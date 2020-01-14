@@ -1,6 +1,9 @@
 version: 2
 jobs:
   build:
+
+    working_directory: ~/repo
+
     docker:
       # specify the version you desire here
       - image: circleci/openjdk:8-jdk
@@ -9,8 +12,6 @@ jobs:
       # CircleCI maintains a library of pre-built images
       # documented at https://circleci.com/docs/2.0/circleci-images/
       # - image: circleci/postgres:9.4
-
-    working_directory: ~/repo
 
     environment:
       # Customize the JVM maximum heap limit
@@ -37,12 +38,4 @@ jobs:
 
       - store_artifacts: # store the uberjar as an artifact
           # Upload test summary for display in Artifacts: https://circleci.com/docs/2.0/artifacts/
-          path: kugga-starter/*.jar
-
-#   deploy:
-#     machine:
-#       enabled: true
-#
-#       steps:
-#         - run:
-#             name: Deploy to Aliyun
+          path: kugga-starter/target/kugga-starter-1.0.0.jar

@@ -1,4 +1,7 @@
 # Kugga
+
+[![CircleCI](https://circleci.com/gh/Kugga-OSS/Kugga/tree/dev.svg?style=svg)](https://circleci.com/gh/Kugga-OSS/Kugga/tree/dev)
+
 Kugga的后端，提供消息服务器，授权认证，文件储存转发等功能。
 
 我会从2020年开始更新这个项目<del>(希望不会咕咕咕，感觉2019年末开的锅太多了)。</del>
