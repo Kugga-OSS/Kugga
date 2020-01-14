@@ -9,6 +9,6 @@ import com.ayang818.kugga.netty.websocket.WebSocketServer;
  **/
 public class ChatServerStarter {
     public static void main(String[] args) throws InterruptedException {
-        WebSocketServer.run();
+        // WebSocketServer.INSTANCE.run();
     }
 }

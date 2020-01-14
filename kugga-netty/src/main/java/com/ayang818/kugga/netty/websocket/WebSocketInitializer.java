@@ -7,6 +7,7 @@ import io.netty.handler.codec.http.HttpObjectAggregator;
 import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
+import io.netty.handler.timeout.IdleStateHandler;
 
 /**
  * @author 杨丰畅
@@ -22,8 +23,12 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new HttpObjectAggregator(1024 * 1024, true));
-        // =========== 以上用于支持Http协议的handler
+        // =========== 以上用于支持Http协议的handler ===========
 
+        // =========== 用于心跳检测 =============
+        pipeline.addLast(new IdleStateHandler(15, 15, 60));
+
+        // =========== 用于WebSocket协议 ===========
         pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
         pipeline.addLast(new ChatHandler());
     }
