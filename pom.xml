@@ -26,8 +26,8 @@
 
     <!-- the order declared in the <modules> element (https://maven.apache.org/guides/mini/guide-multiple-modules.html) -->
     <modules>
-        <module>kugga-starter</module>
         <module>kugga-util</module>
+        <module>kugga-starter</module>
         <module>kugga-netty</module>
     </modules>
 
