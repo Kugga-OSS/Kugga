@@ -7,19 +7,25 @@ import io.netty.channel.nio.NioEventLoopGroup;
 import io.netty.channel.socket.nio.NioServerSocketChannel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 杨丰畅
  * @description NettyWebSocket服务启动类
  * @date 2020/1/12 21:27
  **/
-public class WebSocketServer {
+public enum WebSocketServer {
+    // WebSocketServer的单例
+    INSTANCE();
+
+    ChannelFuture future;
 
     private static final Integer PORT = 10086;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketServer.class);
 
-    public static void run() throws InterruptedException {
+
+    public void run() {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup slaveGroup = new NioEventLoopGroup();
 
@@ -29,13 +35,18 @@ public class WebSocketServer {
                     .channel(NioServerSocketChannel.class)
                     .childHandler(new WebSocketInitializer());
 
-            ChannelFuture startFuture = server.bind(PORT).sync();
+            this.future = server.bind(PORT).sync();
             LOGGER.info("WebSocket 启动, 运行在 ws://localhost:{}", PORT);
-
-            startFuture.channel().closeFuture().sync();
+            future.channel().closeFuture().sync();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         } finally {
             bossGroup.shutdownGracefully();
             slaveGroup.shutdownGracefully();
         }
+    }
+
+    public ChannelFuture getFuture() {
+        return this.future;
     }
 }
