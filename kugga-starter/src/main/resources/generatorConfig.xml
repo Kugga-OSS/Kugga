@@ -36,20 +36,16 @@
             <property name="enableSubPackages" value="true"/>
         </javaClientGenerator>
 
-
-
         <table schema="kugga" tableName="user_info" domainObjectName="User">
-
         </table>
 
         <table schema="kugga" tableName="chat_info" domainObjectName="ChatMessage">
-            <columnOverride column="is_signed">
-                <property name="property" value="signed"/>
+            <columnOverride column="is_signed" property="signed">
             </columnOverride>
         </table>
 
         <table schema="kugga" tableName="friend_info" domainObjectName="Relation">
-
         </table>
+
     </context>
 </generatorConfiguration>
