@@ -13,9 +13,9 @@ import org.springframework.stereotype.Component;
  * @date 2020/1/14 15:21
  **/
 @Component
-public class NettyBooter implements ApplicationListener<ContextRefreshedEvent> {
+public class NettyBoot implements ApplicationListener<ContextRefreshedEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyBooter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyBoot.class);
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {
