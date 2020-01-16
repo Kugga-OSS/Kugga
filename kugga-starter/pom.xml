@@ -19,6 +19,7 @@
         <mybatis-generator.version>1.3.7</mybatis-generator.version>
         <mysql-connector.version>8.0.16</mysql-connector.version>
         <flyway-plugin.version>6.0.7</flyway-plugin.version>
+        <swagger.version>2.9.2</swagger.version>
 
         <host-name>119.23.240.115</host-name>
         <database-name>kugga</database-name>
@@ -53,6 +54,16 @@
             <version>${mysql-connector.version}</version>
         </dependency>
 
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger2</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>io.springfox</groupId>
+            <artifactId>springfox-swagger-ui</artifactId>
+            <version>${swagger.version}</version>
+        </dependency>
     </dependencies>
 
     <build>
