@@ -3,6 +3,7 @@ package com.ayang818.kugga.starter;
 import com.ayang818.kugga.netty.websocket.WebSocketServer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationListener;
 import org.springframework.context.event.ContextRefreshedEvent;
 import org.springframework.stereotype.Component;
@@ -13,9 +14,10 @@ import org.springframework.stereotype.Component;
  * @date 2020/1/14 15:21
  **/
 @Component
-public class NettyBooter implements ApplicationListener<ContextRefreshedEvent> {
+public class NettyBoot implements ApplicationListener<ContextRefreshedEvent> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyBooter.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyBoot.class);
+
 
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {

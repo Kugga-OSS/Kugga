@@ -17,7 +17,6 @@ import org.springframework.stereotype.Component;
 public enum WebSocketServer {
     // WebSocketServer的单例
     INSTANCE();
-
     ChannelFuture future;
 
     private static final Integer PORT = 10086;
@@ -29,21 +28,13 @@ public enum WebSocketServer {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup slaveGroup = new NioEventLoopGroup();
 
-        try {
-            ServerBootstrap server = new ServerBootstrap();
-            server.group(bossGroup, slaveGroup)
-                    .channel(NioServerSocketChannel.class)
-                    .childHandler(new WebSocketInitializer());
+        ServerBootstrap server = new ServerBootstrap();
+        server.group(bossGroup, slaveGroup)
+                .channel(NioServerSocketChannel.class)
+                .childHandler(new WebSocketInitializer());
 
-            this.future = server.bind(PORT).sync();
-            LOGGER.info("WebSocket 启动, 运行在 ws://localhost:{}", PORT);
-            future.channel().closeFuture().sync();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        } finally {
-            bossGroup.shutdownGracefully();
-            slaveGroup.shutdownGracefully();
-        }
+        this.future = server.bind(PORT);
+        LOGGER.info("WebSocket 启动, 运行在 ws://localhost:{}", PORT);
     }
 
     public ChannelFuture getFuture() {
