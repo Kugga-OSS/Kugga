@@ -2,7 +2,7 @@ package com.ayang818.kugga.netty.websocket;
 
 import com.ayang818.kugga.netty.cache.UserChannelMap;
 import com.ayang818.kugga.netty.dto.ChatMessageDto;
-import com.ayang818.kugga.util.GsonUtil;
+import com.ayang818.kugga.utils.GsonUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -50,6 +50,7 @@ import java.util.Set;
  * @date 2020/1/13 12:01
  **/
 public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
+
 
     private static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 

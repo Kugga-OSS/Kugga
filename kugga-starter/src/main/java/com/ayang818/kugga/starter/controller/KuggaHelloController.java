@@ -1,7 +1,6 @@
 package com.ayang818.kugga.starter.controller;
 
 import com.ayang818.kugga.starter.pojo.HelloDto;
-import com.ayang818.kugga.util.GsonUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Value;
