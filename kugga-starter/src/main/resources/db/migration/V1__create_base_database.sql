@@ -8,19 +8,6 @@ create table user_info
     mail_address varchar(40) null comment '邮箱地址，长度最长为40'
 );
 
--- 聊天记录
-create table chat_info
-(
-    id varchar(100) primary key comment '使用snowflake流水号生成的全局唯一ID',
-    sender_id bigint unsigned null comment '发送者的ID',
-    receiver_id bigint unsigned null comment '签收者的ID',
-    message_content varchar(400) null comment '消息长度最多为400',
-    is_signed boolean null comment '消息是否已被签收，true为已签收，false为未签收'
-);
-
-create index idx_receiverId_isSigned_messageContent_senderId
-    on chat_info (receiver_id, is_signed, message_content, sender_id);
-
 -- 朋友关系
 create table friend_info
 (
