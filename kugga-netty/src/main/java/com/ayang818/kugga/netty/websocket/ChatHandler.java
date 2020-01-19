@@ -1,9 +1,8 @@
 package com.ayang818.kugga.netty.websocket;
 
-import com.ayang818.kugga.netty.cache.ChannelUserMap;
+import com.ayang818.kugga.netty.cache.UserChannelMap;
 import com.ayang818.kugga.netty.dto.ChatMessageDto;
 import com.ayang818.kugga.util.GsonUtil;
-import com.google.gson.Gson;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
@@ -62,12 +61,12 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         // 将接收到的Json转化为ChatMessageDto对象
         ChatMessageDto chatMessageDto = GsonUtil.fromJson(content, ChatMessageDto.class);
         // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================
-        ChannelUserMap.putIfAbsent(chatMessageDto.getSender(), context.channel().id().asShortText());
-        LOGGER.info("{}", ChannelUserMap.toStrings());
+        UserChannelMap.putIfAbsent(chatMessageDto.getSender(), context.channel().id().asShortText());
+        LOGGER.info("{}", UserChannelMap.toStrings());
         // ======================================================================================
         LOGGER.info("收到消息对象 : {}", chatMessageDto.toString());
         // 取出接受用户用户的在线设备集合
-        Set<String> receiverChannelSet = ChannelUserMap.get(chatMessageDto.getReceiver());
+        Set<String> receiverChannelSet = UserChannelMap.get(chatMessageDto.getReceiver());
         for (Channel channel : channels) {
             String channelShortId = channel.id().asShortText();
             String processedMessage = String.format("来自%s的消息 : %s", chatMessageDto.getSender(), chatMessageDto.getContent());

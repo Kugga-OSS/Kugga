@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * @description 维护UserId与ChannelID的hash映射，用作在线推送的作用
  * @date 2020/1/14 22:00
  **/
-public class ChannelUserMap {
+public class UserChannelMap {
 
     /**
      * Key : user的id, Value : channel的短ID的集合(可能使用多个端登录，所以使用Set维护)
