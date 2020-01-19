@@ -1,13 +1,19 @@
 package com.ayang818.kugga.netty.websocket;
 
+import com.ayang818.kugga.netty.cache.UserChannelMap;
 import com.ayang818.kugga.netty.dto.ChatMessageDto;
-import com.ayang818.kugga.util.GsonUtil;
+import com.ayang818.kugga.utils.GsonUtil;
+import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.GlobalEventExecutor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.Set;
 
 /**
  *                               ——————————————————————————
@@ -45,16 +51,31 @@ import io.netty.util.concurrent.GlobalEventExecutor;
  **/
 public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
+
     private static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ChatHandler.class);
 
     @Override
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
-        ChatMessageDto chatMessage = ChatMessageDto.builder()
-                .sender(context.channel().id().asShortText())
-                .receiver("message")
-                .content(content).build();
-        channels.writeAndFlush(new TextWebSocketFrame(GsonUtil.toJsonString(chatMessage)));
+        // 将接收到的Json转化为ChatMessageDto对象
+        ChatMessageDto chatMessageDto = GsonUtil.fromJson(content, ChatMessageDto.class);
+        // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================
+        UserChannelMap.putIfAbsent(chatMessageDto.getSender(), context.channel().id().asShortText());
+        LOGGER.info("{}", UserChannelMap.toStrings());
+        // ======================================================================================
+        LOGGER.info("收到消息对象 : {}", chatMessageDto.toString());
+        // 取出接受用户用户的在线设备集合
+        Set<String> receiverChannelSet = UserChannelMap.get(chatMessageDto.getReceiver());
+        for (Channel channel : channels) {
+            String channelShortId = channel.id().asShortText();
+            String processedMessage = String.format("来自%s的消息 : %s", chatMessageDto.getSender(), chatMessageDto.getContent());
+            // 推送消息
+            if (receiverChannelSet != null && receiverChannelSet.contains(channelShortId)) {
+                channel.writeAndFlush(new TextWebSocketFrame(processedMessage));
+            }
+        }
     }
 
     /**

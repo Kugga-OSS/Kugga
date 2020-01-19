@@ -25,9 +25,14 @@
 
         <dependency>
             <groupId>com.ayang818.kugga</groupId>
-            <artifactId>kugga-util</artifactId>
-            <version>${project.version}</version>
+            <artifactId>kugga-utils</artifactId>
         </dependency>
+
+        <dependency>
+            <groupId>com.ayang818.kugga</groupId>
+            <artifactId>kugga-services</artifactId>
+        </dependency>
+
     </dependencies>
 
     <build>

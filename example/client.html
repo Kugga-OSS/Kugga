@@ -7,13 +7,22 @@
     <title>WebSocketTest</title>
 </head>
 <body>
-<div>发送消息</div>
+<label for="msgContent">发送内容</label>
 <input type="text" id="msgContent">
+<label for="sender">发送者</label>
+<input type="text" id="sender">
+<label for="receiver">接收者</label>
+<input type="text" id="receiver">
 <input type="button" value="点击发送消息" onclick="Chat.sendMsg()">
 
-<div>接收消息</div>
+<div>接收消息如下 : </div>
 <div id="receiveMsg" style="background: pink;"></div>
 <script type="application/javascript">
+    function Message(sender, receiver, content)  {
+        this.sender = sender;
+        this.receiver = receiver;
+        this.content = content;
+    }
     window.Chat = {
         socket: null,
         init: function() {
@@ -30,8 +39,11 @@
             }
         },
         sendMsg: function() {
-            var msg = document.getElementById("msgContent");
-            Chat.socket.send(msg.value);
+            var sender = document.getElementById("sender").value;
+            var receiver = document.getElementById("receiver").value;
+            var content = document.getElementById("msgContent").value;
+            var message = new Message(sender, receiver, content);
+            Chat.socket.send(JSON.stringify(message));
         }
     };
 
