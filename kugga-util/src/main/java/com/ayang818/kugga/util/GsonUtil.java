@@ -11,8 +11,16 @@ import com.google.gson.GsonBuilder;
 public class GsonUtil {
     private static final Gson GSON = new GsonBuilder().create();
 
-    public static String toJsonString(Object o) {
+    public static String toJson(Object o) {
         return GSON.toJson(o);
+    }
+
+    public static <T> T fromJson(String jsonString, Class<T> klass) {
+        return GSON.fromJson(jsonString, klass);
+    }
+
+    public static Gson getGson() {
+        return GSON;
     }
 
     public static void main(String[] args) {

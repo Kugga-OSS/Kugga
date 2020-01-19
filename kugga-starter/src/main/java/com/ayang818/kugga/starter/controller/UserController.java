@@ -28,5 +28,4 @@ public class UserController {
     public ResultDto login() {
         return Result.ok(null);
     }
-
 }
