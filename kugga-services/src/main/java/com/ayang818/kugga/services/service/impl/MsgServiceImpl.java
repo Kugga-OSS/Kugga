@@ -50,7 +50,6 @@ public class MsgServiceImpl implements MsgService {
         String msgType = msgDto.getMsgType();
         String msgContent = msgDto.getContent();
         Date currentTime = new Date(System.currentTimeMillis());
-
         /* 存消息内容 */
         Message message = new Message();
         message.setSenderId(sUid);
@@ -59,8 +58,9 @@ public class MsgServiceImpl implements MsgService {
         message.setMsgType(MsgType.TEXT);
         message.setCreateTime(currentTime);
         int whichIsMid = messageMapper.insert(message);
+        // 这里好像拿不到
         Long mid = message.getMid();
-        log.info("消息Id是 {} {}", whichIsMid, mid);
+        log.info("消息Id是 {}", mid);
 
         /* 存消息关系1,s-r */
         MessageRelation messageRelationS2R = new MessageRelation();

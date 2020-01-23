@@ -37,21 +37,19 @@
         </javaClientGenerator>
 
         <table schema="kugga" tableName="kugga_user" domainObjectName="User">
-            <columnOverride column="is_blocked" property="blocked">
-            </columnOverride>
+            <generatedKey column="uid" sqlStatement="MySql" identity="true"/>
+            <columnOverride column="is_blocked" property="blocked"/>
         </table>
 
         <table schema="kugga" tableName="kugga_message_content" domainObjectName="Message">
+            <generatedKey column="mid" sqlStatement="MySql" identity="true" />
         </table>
 
         <table schema="kugga" tableName="kugga_message_relation" domainObjectName="MessageRelation">
-<!--            <columnOverride column="is_sender" property="sender">-->
-<!--            </columnOverride>-->
         </table>
 
         <table schema="kugga" tableName="kugga_user_relation" domainObjectName="UserRelation">
-            <columnOverride column="is_pass" property="pass">
-            </columnOverride>
+            <columnOverride column="is_pass" property="pass" />
         </table>
 
     </context>

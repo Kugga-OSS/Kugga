@@ -8,6 +8,7 @@ import com.ayang818.kugga.services.service.impl.MsgServiceImpl;
 import com.ayang818.kugga.services.service.impl.UserServiceImpl;
 import com.ayang818.kugga.utils.GsonUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
@@ -17,6 +18,7 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
 import org.springframework.stereotype.Service;
 
@@ -56,6 +58,7 @@ import java.util.Set;
  * @description TODO
  * @date 2020/1/13 12:01
  **/
+@ChannelHandler.Sharable
 @Component
 public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
@@ -80,7 +83,6 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         MsgDto msgDto = GsonUtil.fromJson(content, MsgDto.class);
         // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================
         UserChannelMap.putIfAbsent(msgDto.getSenderUid(), context.channel().id().asShortText());
-        // LOGGER.info("{}", UserChannelMap.toStrings());
         LOGGER.info("收到消息对象 : {}", msgDto.toString());
 
         // ================ 消息持久化 ==============

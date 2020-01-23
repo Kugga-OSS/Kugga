@@ -28,7 +28,6 @@ public class WebSocketServer {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(WebSocketServer.class);
 
-
     public void run() {
         EventLoopGroup bossGroup = new NioEventLoopGroup();
         EventLoopGroup slaveGroup = new NioEventLoopGroup();
@@ -38,8 +37,13 @@ public class WebSocketServer {
                 .channel(NioServerSocketChannel.class)
                 .childHandler(webSocketInitializer);
 
-        this.future = server.bind(PORT);
-        LOGGER.info("WebSocket 启动, 运行在 ws://localhost:{}", PORT);
+        try {
+            this.future = server.bind(PORT).sync();
+            LOGGER.info("WebSocket 启动, 运行在 ws://localhost:{}", PORT);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+            LOGGER.info("WebSocket 启动失败");
+        }
     }
 
     public ChannelFuture getFuture() {
