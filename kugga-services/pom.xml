@@ -15,14 +15,7 @@
         <mysql-connector.version>8.0.16</mysql-connector.version>
         <mybatis-generator.version>1.3.7</mybatis-generator.version>
         <flyway-plugin.version>6.0.7</flyway-plugin.version>
-
-
-        <host-name>119.23.240.115</host-name>
-        <database-name>kugga</database-name>
-        <port>3307</port>
-        <username>root</username>
-        <password>123</password>
-        <database-url>jdbc:mysql://${host-name}:${port}/${database-name}</database-url>
+        <maven-resource-plugin.version>3.0.2</maven-resource-plugin.version>
     </properties>
 
     <dependencies>
@@ -33,6 +26,13 @@
     </dependencies>
 
     <build>
+        <resources>
+            <resource>
+                <directory>src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+
         <plugins>
             <plugin>
                 <groupId>org.mybatis.generator</groupId>
@@ -53,6 +53,11 @@
                         <version>${mysql-connector.version}</version>
                     </dependency>
                 </dependencies>
+            </plugin>
+
+            <plugin>
+                <artifactId>maven-resources-plugin</artifactId>
+                <version>${maven-resource-plugin.version}</version>
             </plugin>
 
             <plugin>

@@ -19,8 +19,8 @@
 <div id="receiveMsg" style="background: pink;"></div>
 <script type="application/javascript">
     function Message(sender, receiver, content)  {
-        this.sender = sender;
-        this.receiver = receiver;
+        this.senderUid = sender;
+        this.receiverUid = receiver;
         this.content = content;
     }
     window.Chat = {
