@@ -1,21 +1,52 @@
--- 用户信息
-create table user_info
+-- 用户表
+create table kugga_user
 (
-    id bigint unsigned auto_increment primary key,
-    username varchar(20) null comment '用户名，长度最多为20',
-    password varchar(40) null comment '密码，长度最长为40',
-    avatar_url varchar(100) null comment '头像的url地址',
-    mail_address varchar(40) null comment '邮箱地址，长度最长为40'
+    uid bigint unsigned auto_increment comment '用户uid',
+    username varchar(200) not null comment '用户名',
+    password varchar(200) not null comment '密码',
+    avatar varchar(500) not null default 'https://kugga-storage.oss-cn-hangzhou.aliyuncs.com/avatar/default.png' comment '头像url',
+    email varchar(200) not null comment '邮件地址',
+    is_blocked tinyint(1) null comment '账号是否未被激活',
+    constraint kugga_user_pk
+        primary key (uid)
 );
 
--- 朋友关系
-create table friend_info
+create index idx_username_password_is_blocked
+    on kugga_user (username, password, is_blocked);
+
+-- 消息内容表
+create table kugga_message_content
 (
-    id bigint unsigned auto_increment primary key ,
-    owner_id bigint unsigned null comment '发送者的ID',
-    friend_id bigint unsigned null comment '签收者的ID',
-    pending_status tinyint null comment '发出好友请求的状态，1为request，2为success，若不同意或忽略，则删除。(注意这里的关系时双向的，增加和删除时都是两条的操作)'
+    mid bigint unsigned auto_increment comment '消息id',
+    content varchar(500) not null comment '消息内容',
+    sender_id bigint unsigned not null comment '发送人uid(冗余)',
+    receiver_id bigint unsigned not null comment '接受者uid(冗余)',
+    msg_type int not null comment '消息类型',
+    create_time timestamp not null,
+    constraint kugga_message_content_pk
+        primary key (mid)
 );
 
-create index idx_ownerId_friendId_pendingStatus
-    on friend_info (owner_id, pending_status, friend_id);
+-- 消息索引表
+create table kugga_message_relation
+(
+    owner_uid bigint unsigned not null comment '消息拥有者',
+    other_uid bigint unsigned not null comment '关系第二方',
+    mid bigint unsigned not null comment '消息mid',
+    is_sender tinyint(1) not null comment '是发件人还是收件人',
+    create_time timestamp not null,
+    constraint kugga_message_relation_pk
+        primary key (owner_uid, mid)
+);
+
+-- 用户关系表
+create table kugga_user_relation
+(
+    owner_uid bigint unsigned not null comment '关系拥有者',
+    other_uid bigint unsigned not null comment '关系第二方',
+    last_mid bigint unsigned null comment '最后一条消息',
+    is_pass tinyint(2) not null comment '0表示未通过,1表示等待中,2表示通过',
+    create_time timestamp not null,
+    constraint kugga_user_relation_pk
+        unique (owner_uid, other_uid)
+);

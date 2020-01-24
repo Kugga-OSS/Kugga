@@ -8,13 +8,24 @@ import io.netty.handler.codec.http.HttpServerCodec;
 import io.netty.handler.codec.http.websocketx.WebSocketServerProtocolHandler;
 import io.netty.handler.stream.ChunkedWriteHandler;
 import io.netty.handler.timeout.IdleStateHandler;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
 
 /**
  * @author 杨丰畅
  * @description Channel中初始化工具类
  * @date 2020/1/12 21:33
  **/
+@Component
 public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
+
+    private final ChatHandler chatHandler;
+
+    @Autowired
+    public WebSocketInitializer(ChatHandler chatHandler) {
+        this.chatHandler = chatHandler;
+    }
 
     @Override
     protected void initChannel(SocketChannel socketChannel) throws Exception {
@@ -30,7 +41,7 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
 
         // =========== 用于WebSocket协议 ===========
         pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
-        pipeline.addLast(new ChatHandler());
+        pipeline.addLast(chatHandler);
     }
 
 }

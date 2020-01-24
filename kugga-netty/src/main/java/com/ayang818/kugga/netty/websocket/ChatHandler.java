@@ -1,9 +1,14 @@
 package com.ayang818.kugga.netty.websocket;
 
 import com.ayang818.kugga.netty.cache.UserChannelMap;
-import com.ayang818.kugga.netty.dto.ChatMessageDto;
+import com.ayang818.kugga.services.pojo.MsgDto;
+import com.ayang818.kugga.services.service.MsgService;
+import com.ayang818.kugga.services.service.UserService;
+import com.ayang818.kugga.services.service.impl.MsgServiceImpl;
+import com.ayang818.kugga.services.service.impl.UserServiceImpl;
 import com.ayang818.kugga.utils.GsonUtil;
 import io.netty.channel.Channel;
+import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
@@ -12,6 +17,10 @@ import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Scope;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 
 import java.util.Set;
 
@@ -49,8 +58,19 @@ import java.util.Set;
  * @description TODO
  * @date 2020/1/13 12:01
  **/
+@ChannelHandler.Sharable
+@Component
 public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
+    private final UserService userService;
+
+    private final MsgService msgService;
+
+    @Autowired
+    public ChatHandler(UserService userService, MsgService msgService) {
+        this.userService = userService;
+        this.msgService = msgService;
+    }
 
     private static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
@@ -60,17 +80,18 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
         // 将接收到的Json转化为ChatMessageDto对象
-        ChatMessageDto chatMessageDto = GsonUtil.fromJson(content, ChatMessageDto.class);
+        MsgDto msgDto = GsonUtil.fromJson(content, MsgDto.class);
         // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================
-        UserChannelMap.putIfAbsent(chatMessageDto.getSender(), context.channel().id().asShortText());
-        LOGGER.info("{}", UserChannelMap.toStrings());
-        // ======================================================================================
-        LOGGER.info("收到消息对象 : {}", chatMessageDto.toString());
+        UserChannelMap.putIfAbsent(msgDto.getSenderUid(), context.channel().id().asShortText());
+        LOGGER.info("收到消息对象 : {}", msgDto.toString());
+
+        // ================ 消息持久化 ==============
+        msgService.sendMsg(msgDto);
         // 取出接受用户用户的在线设备集合
-        Set<String> receiverChannelSet = UserChannelMap.get(chatMessageDto.getReceiver());
+        Set<String> receiverChannelSet = UserChannelMap.get(msgDto.getReceiverUid());
         for (Channel channel : channels) {
             String channelShortId = channel.id().asShortText();
-            String processedMessage = String.format("来自%s的消息 : %s", chatMessageDto.getSender(), chatMessageDto.getContent());
+            String processedMessage = String.format("来自%s的消息 : %s", msgDto.getSenderUid(), msgDto.getContent());
             // 推送消息
             if (receiverChannelSet != null && receiverChannelSet.contains(channelShortId)) {
                 channel.writeAndFlush(new TextWebSocketFrame(processedMessage));
