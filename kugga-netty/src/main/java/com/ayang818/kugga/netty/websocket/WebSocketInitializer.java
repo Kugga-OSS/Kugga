@@ -31,17 +31,18 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
     protected void initChannel(SocketChannel socketChannel) throws Exception {
         ChannelPipeline pipeline = socketChannel.pipeline();
 
+        // =========== 用于支持Http协议的handler ===========
         pipeline.addLast(new HttpServerCodec());
         pipeline.addLast(new ChunkedWriteHandler());
         pipeline.addLast(new HttpObjectAggregator(1024 * 1024, true));
-        // =========== 以上用于支持Http协议的handler ===========
-
-        // =========== 用于心跳检测 =============
-        pipeline.addLast(new IdleStateHandler(15, 15, 60));
 
         // =========== 用于WebSocket协议 ===========
         pipeline.addLast(new WebSocketServerProtocolHandler("/ws"));
         pipeline.addLast(chatHandler);
+
+        // =========== 用于心跳检测 =============
+        pipeline.addLast(new IdleStateHandler(15, 15, 60));
+        pipeline.addLast();
     }
 
 }
