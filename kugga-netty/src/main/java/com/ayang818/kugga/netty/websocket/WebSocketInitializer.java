@@ -22,9 +22,12 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
 
     private final ChatHandler chatHandler;
 
+    private final CloseIdleChannelHandler idleChannelHandler;
+
     @Autowired
-    public WebSocketInitializer(ChatHandler chatHandler) {
+    public WebSocketInitializer(ChatHandler chatHandler, CloseIdleChannelHandler idleChannelHandler) {
         this.chatHandler = chatHandler;
+        this.idleChannelHandler = idleChannelHandler;
     }
 
     @Override
@@ -41,8 +44,8 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(chatHandler);
 
         // =========== 用于心跳检测 =============
-        pipeline.addLast(new IdleStateHandler(15, 15, 60));
-        pipeline.addLast();
+        pipeline.addLast(new IdleStateHandler(0, 0, 300));
+        pipeline.addLast(idleChannelHandler);
     }
 
 }
