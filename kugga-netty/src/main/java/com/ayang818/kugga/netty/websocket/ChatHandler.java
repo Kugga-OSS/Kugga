@@ -19,7 +19,6 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.sound.sampled.Line;
 import java.util.Set;
 
 /**
@@ -83,17 +82,34 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         String shortId = context.channel().id().asShortText();
         UserConnectionMap.put(msgDto.getSenderUid().toString(), shortId);
         ConnectionUserMap.put(shortId, msgDto.getSenderUid().toString());
-        LOGGER.info("收到消息对象 : {}", msgDto.toString());
         // ================ 消息持久化 ==============
         msgService.sendMsg(msgDto);
 
-        // 取出接收用户用户的在线设备集合
+        // 取出接收用户用户的在线设备集合并回推消息
+        Set<UserConnectionMap.Connection> senderChannelSet = UserConnectionMap.get(msgDto.getSenderUid().toString());
+        pushMessage(senderChannelSet, msgDto, true);
+        // 取出接收用户用户的在线设备集合并发送消息
         Set<UserConnectionMap.Connection> receiverChannelSet = UserConnectionMap.get(msgDto.getReceiverUid().toString());
+        pushMessage(receiverChannelSet, msgDto, false);
+    }
+
+    /**
+     * @description 消息下推
+     * @param channelSet
+     * @param msgDto
+     * @param isPushToSender
+     */
+    public void pushMessage(Set<UserConnectionMap.Connection> channelSet, MsgDto msgDto, Boolean isPushToSender) {
+        String processedMessage;
+        if (isPushToSender) {
+            processedMessage = String.format("发往%s的消息 : %s，发送成功", msgDto.getReceiverUid(), msgDto.getContent());
+        } else {
+            processedMessage = String.format("收到来自%s的消息 : %s", msgDto.getSenderUid(), msgDto.getContent());
+        }
         for (Channel channel : channels) {
             String channelShortId = channel.id().asShortText();
-            String processedMessage = String.format("来自%s的消息 : %s", msgDto.getSenderUid(), msgDto.getContent());
             // 推送消息
-            if (receiverChannelSet != null && receiverChannelSet.contains(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build())) {
+            if (channelSet != null && channelSet.contains(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build())) {
                 channel.writeAndFlush(new TextWebSocketFrame(processedMessage));
             }
         }
