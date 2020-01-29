@@ -1,11 +1,10 @@
 package com.ayang818.kugga.netty.websocket;
 
-import com.ayang818.kugga.netty.cache.UserChannelMap;
+import com.ayang818.kugga.netty.cache.ConnectionUserMap;
+import com.ayang818.kugga.netty.cache.UserConnectionMap;
 import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.service.MsgService;
 import com.ayang818.kugga.services.service.UserService;
-import com.ayang818.kugga.services.service.impl.MsgServiceImpl;
-import com.ayang818.kugga.services.service.impl.UserServiceImpl;
 import com.ayang818.kugga.utils.GsonUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
@@ -18,10 +17,9 @@ import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Scope;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 
+import javax.sound.sampled.Line;
 import java.util.Set;
 
 /**
@@ -72,7 +70,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         this.msgService = msgService;
     }
 
-    private static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
+    public static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ChatHandler.class);
 
@@ -82,18 +80,20 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         // 将接收到的Json转化为ChatMessageDto对象
         MsgDto msgDto = GsonUtil.fromJson(content, MsgDto.class);
         // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================
-        UserChannelMap.putIfAbsent(msgDto.getSenderUid(), context.channel().id().asShortText());
+        String shortId = context.channel().id().asShortText();
+        UserConnectionMap.put(msgDto.getSenderUid().toString(), shortId);
+        ConnectionUserMap.put(shortId, msgDto.getSenderUid().toString());
         LOGGER.info("收到消息对象 : {}", msgDto.toString());
-
         // ================ 消息持久化 ==============
         msgService.sendMsg(msgDto);
-        // 取出接受用户用户的在线设备集合
-        Set<String> receiverChannelSet = UserChannelMap.get(msgDto.getReceiverUid());
+
+        // 取出接收用户用户的在线设备集合
+        Set<UserConnectionMap.Connection> receiverChannelSet = UserConnectionMap.get(msgDto.getReceiverUid().toString());
         for (Channel channel : channels) {
             String channelShortId = channel.id().asShortText();
             String processedMessage = String.format("来自%s的消息 : %s", msgDto.getSenderUid(), msgDto.getContent());
             // 推送消息
-            if (receiverChannelSet != null && receiverChannelSet.contains(channelShortId)) {
+            if (receiverChannelSet != null && receiverChannelSet.contains(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build())) {
                 channel.writeAndFlush(new TextWebSocketFrame(processedMessage));
             }
         }
@@ -108,6 +108,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         super.handlerAdded(ctx);
         channels.add(ctx.channel());
+        LOGGER.info("{} channel已添加", ctx.channel().id().asShortText());
     }
 
 
@@ -120,6 +121,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         super.handlerRemoved(ctx);
         channels.remove(ctx.channel());
+        LOGGER.info("{} channel已删除", ctx.channel().id().asShortText());
     }
 
 }
