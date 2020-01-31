@@ -1,7 +1,9 @@
-package com.ayang818.kugga.netty.redis;
+package com.ayang818.kugga.netty.redisPublisher;
 
 import com.ayang818.kugga.netty.websocket.ChatHandler;
+import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.impl.MsgServiceImpl;
+import com.ayang818.kugga.utils.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -31,9 +33,11 @@ public class NewMessageListener implements MessageListener {
     @Override
     public void onMessage(Message message, byte[] bytes) {
         String topic = stringRedisSerializer.deserialize(message.getChannel());
-        String jsonMsg = valueSerializer.deserialize(message.getBody());
-        logger.info("Message Received --> pattern: {}，topic:{}，message: {}", new String(bytes), topic, jsonMsg);
+        String msgVoString = valueSerializer.deserialize(message.getBody());
+        logger.info("Message Received --> pattern: {}，topic:{}，message: {}", new String(bytes), topic, msgVoString);
+        MsgVo msgVo = JsonUtil.fromJson(msgVoString, MsgVo.class);
 
-        // chatHandler.pushMessage(null, null, false);
+        /* 通过redis的发布订阅模式推送消息到消息接收方 */
+        chatHandler.pushMessage(msgVo.getReceiverUid(), msgVoString);
     }
 }

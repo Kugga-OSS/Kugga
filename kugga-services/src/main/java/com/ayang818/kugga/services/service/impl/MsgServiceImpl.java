@@ -118,6 +118,7 @@ public class MsgServiceImpl implements MsgService {
                 .createTime(currentTime)
                 .type(msgType)
                 .build();
+
         /* 将消息发布到Redis中 */
         redisTemplate.convertAndSend(RedisConstants.WBE_SOCKET_TOPIC, JsonUtil.toJson(msgVo));
 

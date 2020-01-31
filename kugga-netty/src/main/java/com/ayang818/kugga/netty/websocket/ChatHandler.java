@@ -3,6 +3,7 @@ package com.ayang818.kugga.netty.websocket;
 import com.ayang818.kugga.netty.cache.ConnectionUserMap;
 import com.ayang818.kugga.netty.cache.UserConnectionMap;
 import com.ayang818.kugga.services.pojo.MsgDto;
+import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.JsonUtil;
@@ -19,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -83,36 +85,29 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         String shortId = context.channel().id().asShortText();
         UserConnectionMap.put(msgDto.getSenderUid().toString(), shortId);
         ConnectionUserMap.put(shortId, msgDto.getSenderUid().toString());
+
         // ================ 消息持久化 ==============
-        msgService.sendMsg(msgDto);
+        MsgVo msgVo = msgService.sendMsg(msgDto);
 
         // 取出接收用户用户的在线设备集合并回推消息
-        Set<UserConnectionMap.Connection> senderChannelSet = UserConnectionMap.get(msgDto.getSenderUid().toString());
-        pushMessage(senderChannelSet, msgDto, true);
-        // 取出接收用户用户的在线设备集合并发送消息
-        Set<UserConnectionMap.Connection> receiverChannelSet = UserConnectionMap.get(msgDto.getReceiverUid().toString());
-        pushMessage(receiverChannelSet, msgDto, false);
+        pushMessage(msgVo.getSenderUid(), JsonUtil.toJson(msgVo));
     }
 
     /**
-     * @description 消息下推
-     * @param channelSet
-     * @param msgDto
-     * @param isPushToSender
+     * @description 推送消息
+     * @param uid
+     * @param jsonMsgVo
      */
-    public void pushMessage(Set<UserConnectionMap.Connection> channelSet, MsgDto msgDto, Boolean isPushToSender) {
-        String processedMessage;
-        if (isPushToSender) {
-            processedMessage = String.format("发往%s的消息 : %s，发送成功", msgDto.getReceiverUid(), msgDto.getContent());
-        } else {
-            processedMessage = String.format("收到来自%s的消息 : %s", msgDto.getSenderUid(), msgDto.getContent());
-        }
-        for (Channel channel : channels) {
-            String channelShortId = channel.id().asShortText();
-            // 推送消息
-            if (channelSet != null && channelSet.contains(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build())) {
-                channel.writeAndFlush(new TextWebSocketFrame(processedMessage));
-            }
+    public void pushMessage(Long uid, String jsonMsgVo) {
+        Set<UserConnectionMap.Connection> connections = UserConnectionMap.get(String.valueOf(uid));
+        if (connections != null && !connections.isEmpty()) {
+            Set<String> channelShortIdSet = new HashSet<>();
+            connections.forEach(connection -> channelShortIdSet.add(connection.getChannelShortId()));
+            channels.forEach(channel -> {
+                if (channelShortIdSet.contains(channel.id().asShortText())) {
+                    channel.writeAndFlush(new TextWebSocketFrame(String.format("收到json数据 : %s", jsonMsgVo)));
+                }
+            });
         }
     }
 

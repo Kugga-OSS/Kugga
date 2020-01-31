@@ -1,4 +1,4 @@
-package com.ayang818.kugga.netty.redis;
+package com.ayang818.kugga.netty.redisPublisher;
 
 import com.ayang818.kugga.utils.enums.RedisConstants;
 import org.springframework.beans.factory.annotation.Value;

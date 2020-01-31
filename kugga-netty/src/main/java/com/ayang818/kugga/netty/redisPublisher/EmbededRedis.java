@@ -1,12 +1,4 @@
-package com.ayang818.kugga.netty.redis;
-
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-import redis.embedded.RedisServer;
-
-import javax.annotation.PostConstruct;
-import javax.annotation.PreDestroy;
-import java.io.IOException;
+package com.ayang818.kugga.netty.redisPublisher;
 
 /**
  * @author 杨丰畅
