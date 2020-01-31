@@ -3,6 +3,7 @@ create table kugga_user
 (
     uid bigint unsigned auto_increment comment '用户uid',
     username varchar(200) not null comment '用户名',
+    display_name varchar(200) not null comment '显示的用户名',
     password varchar(200) not null comment '密码',
     avatar varchar(500) not null default 'https://kugga-storage.oss-cn-hangzhou.aliyuncs.com/avatar/default.png' comment '头像url',
     email varchar(200) not null comment '邮件地址',

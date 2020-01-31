@@ -1,4 +1,4 @@
-package com.ayang818.kugga.services.enums;
+package com.ayang818.kugga.utils.enums;
 
 /**
  * @author 杨丰畅
