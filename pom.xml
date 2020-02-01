@@ -34,10 +34,11 @@
 
         <host-name>119.23.240.115</host-name>
         <database-name>kugga</database-name>
-        <port>3307</port>
+        <mysql-port>3307</mysql-port>
         <username>root</username>
         <password>123</password>
-        <database-url>jdbc:mysql://${host-name}:${port}/${database-name}</database-url>
+        <database-url>jdbc:mysql://${host-name}:${mysql-port}/${database-name}</database-url>
+        <redis-port>6379</redis-port>
     </properties>
 
     <!--  里面按照parent里面的dependencyManagement的版本号来判断-->
@@ -78,6 +79,16 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-data-redis</artifactId>
+            <exclusions>
+                <exclusion>
+                    <groupId>io.lettuce</groupId>
+                    <artifactId>lettuce-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
+        <dependency>
+            <groupId>redis.clients</groupId>
+            <artifactId>jedis</artifactId>
         </dependency>
 
         <dependency>
@@ -98,7 +109,13 @@
             <version>${log4j.version}</version>
         </dependency>
 
-<!--    spring boot bean 监控工具    -->
+        <dependency>
+            <groupId>com.github.kstyrc</groupId>
+            <artifactId>embedded-redis</artifactId>
+            <version>0.6</version>
+        </dependency>
+
+        <!--    spring boot bean 监控工具    -->
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->
 <!--            <artifactId>spring-boot-starter-actuator</artifactId>-->

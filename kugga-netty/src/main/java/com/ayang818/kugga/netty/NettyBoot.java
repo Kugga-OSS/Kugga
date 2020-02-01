@@ -19,7 +19,7 @@ public class NettyBoot implements ApplicationListener<ContextRefreshedEvent> {
     @Autowired
     WebSocketServer webSocketServer;
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NettyBoot.class);
+    private static final Logger logger = LoggerFactory.getLogger(NettyBoot.class);
     
     @Override
     public void onApplicationEvent(ContextRefreshedEvent event) {

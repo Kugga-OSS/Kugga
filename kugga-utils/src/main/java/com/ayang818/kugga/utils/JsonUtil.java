@@ -8,7 +8,7 @@ import com.google.gson.GsonBuilder;
  * @description TODO
  * @date 2020/1/13 14:24
  **/
-public class GsonUtil {
+public class JsonUtil {
     private static final Gson GSON = new GsonBuilder().create();
 
     public static String toJson(Object o) {

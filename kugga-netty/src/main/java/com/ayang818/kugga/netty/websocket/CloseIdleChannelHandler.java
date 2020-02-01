@@ -21,7 +21,7 @@ import org.springframework.stereotype.Component;
 @Component
 public class CloseIdleChannelHandler extends ChannelDuplexHandler {
 
-    public static final Logger log = LoggerFactory.getLogger(CloseIdleChannelHandler.class);
+    public static final Logger logger = LoggerFactory.getLogger(CloseIdleChannelHandler.class);
 
     @Autowired
     ChatHandler chatHandler;
@@ -37,9 +37,9 @@ public class CloseIdleChannelHandler extends ChannelDuplexHandler {
                     ConnectionUserMap.remove(shortId);
                     UserConnectionMap.remove(userId, shortId);
                     chatHandler.handlerRemoved(ctx);
-                    log.info("用户{} 的 {} 号channel连接不可达, 已删除相关缓存", userId, shortId);
-                    log.info(ConnectionUserMap.toStrings());
-                    log.info(UserConnectionMap.toStrings());
+                    logger.info("用户{} 的 {} 号channel连接不可达, 已删除相关缓存", userId, shortId);
+                    logger.info(ConnectionUserMap.toStrings());
+                    logger.info(UserConnectionMap.toStrings());
                 }
             }
         }

@@ -3,9 +3,10 @@ package com.ayang818.kugga.netty.websocket;
 import com.ayang818.kugga.netty.cache.ConnectionUserMap;
 import com.ayang818.kugga.netty.cache.UserConnectionMap;
 import com.ayang818.kugga.services.pojo.MsgDto;
+import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
 import com.ayang818.kugga.services.service.UserService;
-import com.ayang818.kugga.utils.GsonUtil;
+import com.ayang818.kugga.utils.JsonUtil;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -19,7 +20,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import javax.sound.sampled.Line;
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -60,42 +61,48 @@ import java.util.Set;
 @Component
 public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
-    private final UserService userService;
-
-    private final MsgService msgService;
+    @Autowired
+    UserService userService;
 
     @Autowired
-    public ChatHandler(UserService userService, MsgService msgService) {
-        this.userService = userService;
-        this.msgService = msgService;
-    }
+    MsgService msgService;
 
     public static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ChatHandler.class);
+    private static final Logger logger = LoggerFactory.getLogger(ChatHandler.class);
 
     @Override
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
         // 将接收到的Json转化为ChatMessageDto对象
-        MsgDto msgDto = GsonUtil.fromJson(content, MsgDto.class);
+        MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
         // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================
         String shortId = context.channel().id().asShortText();
         UserConnectionMap.put(msgDto.getSenderUid().toString(), shortId);
         ConnectionUserMap.put(shortId, msgDto.getSenderUid().toString());
-        LOGGER.info("收到消息对象 : {}", msgDto.toString());
-        // ================ 消息持久化 ==============
-        msgService.sendMsg(msgDto);
 
-        // 取出接收用户用户的在线设备集合
-        Set<UserConnectionMap.Connection> receiverChannelSet = UserConnectionMap.get(msgDto.getReceiverUid().toString());
-        for (Channel channel : channels) {
-            String channelShortId = channel.id().asShortText();
-            String processedMessage = String.format("来自%s的消息 : %s", msgDto.getSenderUid(), msgDto.getContent());
-            // 推送消息
-            if (receiverChannelSet != null && receiverChannelSet.contains(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build())) {
-                channel.writeAndFlush(new TextWebSocketFrame(processedMessage));
-            }
+        // ================ 消息持久化 ==============
+        MsgVo msgVo = msgService.sendMsg(msgDto);
+
+        // 取出接收用户用户的在线设备集合并回推消息
+        pushMessage(msgVo.getSenderUid(), JsonUtil.toJson(msgVo));
+    }
+
+    /**
+     * @description 推送消息
+     * @param uid
+     * @param jsonMsgVo
+     */
+    public void pushMessage(Long uid, String jsonMsgVo) {
+        Set<UserConnectionMap.Connection> connections = UserConnectionMap.get(String.valueOf(uid));
+        if (connections != null && !connections.isEmpty()) {
+            Set<String> channelShortIdSet = new HashSet<>();
+            connections.forEach(connection -> channelShortIdSet.add(connection.getChannelShortId()));
+            channels.forEach(channel -> {
+                if (channelShortIdSet.contains(channel.id().asShortText())) {
+                    channel.writeAndFlush(new TextWebSocketFrame(String.format("收到json数据 : %s", jsonMsgVo)));
+                }
+            });
         }
     }
 
@@ -108,7 +115,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
         super.handlerAdded(ctx);
         channels.add(ctx.channel());
-        LOGGER.info("{} channel已添加", ctx.channel().id().asShortText());
+        logger.info("{} channel已添加", ctx.channel().id().asShortText());
     }
 
 
@@ -121,7 +128,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         super.handlerRemoved(ctx);
         channels.remove(ctx.channel());
-        LOGGER.info("{} channel已删除", ctx.channel().id().asShortText());
+        logger.info("{} channel已删除", ctx.channel().id().asShortText());
     }
 
 }

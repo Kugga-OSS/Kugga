@@ -3,6 +3,7 @@ create table kugga_user
 (
     uid bigint unsigned auto_increment comment '用户uid',
     username varchar(200) not null comment '用户名',
+    display_name varchar(200) not null comment '显示的用户名',
     password varchar(200) not null comment '密码',
     avatar varchar(500) not null default 'https://kugga-storage.oss-cn-hangzhou.aliyuncs.com/avatar/default.png' comment '头像url',
     email varchar(200) not null comment '邮件地址',
@@ -10,6 +11,7 @@ create table kugga_user
     constraint kugga_user_pk
         primary key (uid)
 );
+insert into kugga_user(username, display_name, password, email, is_blocked) values("ayang818", "ayang818", md5("123"), "ayany@qq.com", 0),("ayang919", "ayang919", md5("123"), "ayany@qq.com", 0);
 
 create index idx_username_password_is_blocked
     on kugga_user (username, password, is_blocked);
