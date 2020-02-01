@@ -1,19 +1,26 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" xmlns="http://www.w3.org/1999/html" xmlns="http://www.w3.org/1999/html">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
     <title>WebSocketTest</title>
 </head>
-<body>
-<label for="msgContent">发送内容</label>
-<input type="text" id="msgContent">
-<label for="sender">发送者</label>
-<input type="text" id="sender">
-<label for="receiver">接收者</label>
-<input type="text" id="receiver">
-<input type="button" value="点击发送消息" onclick="Chat.sendMsg()">
+
+<div style="margin: 10px auto; border: black 1px solid; padding: 10px;">
+    <label for="username">注册用户</label>
+    <input type="text" id="username">
+    <input type="button" value="点击注册用户(1或2)" onclick="Chat.registerUser()">
+</div>
+<div style="margin: 10px auto; border: black 1px solid; padding: 10px;">
+    <label for="msgContent">发送内容</label>
+    <input type="text" id="msgContent">
+    <label for="sender">发送者</label>
+    <input type="text" id="sender">
+    <label for="receiver">接收者</label>
+    <input type="text" id="receiver">
+    <input type="button" value="点击发送消息" onclick="Chat.sendMsg()">
+</div>
 
 <div>接收消息如下 : </div>
 <div id="receiveMsg" style="background: pink;"></div>
@@ -44,6 +51,13 @@
             var content = document.getElementById("msgContent").value;
             var message = new Message(sender, receiver, content);
             Chat.socket.send(JSON.stringify(message));
+        },
+        registerUser: function() {
+            var sender = document.getElementById("username").value;
+            document.getElementById("sender").value = sender;
+            var message = new Message(sender, null, null);
+            Chat.socket.send(JSON.stringify(message));
+            alert("注册完成")
         }
     };
 
