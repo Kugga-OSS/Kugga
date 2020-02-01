@@ -61,15 +61,11 @@ import java.util.Set;
 @Component
 public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame> {
 
-    private final UserService userService;
-
-    private final MsgService msgService;
+    @Autowired
+    UserService userService;
 
     @Autowired
-    public ChatHandler(UserService userService, MsgService msgService) {
-        this.userService = userService;
-        this.msgService = msgService;
-    }
+    MsgService msgService;
 
     public static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
@@ -78,7 +74,6 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     @Override
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
-        logger.info(content);
         // 将接收到的Json转化为ChatMessageDto对象
         MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
         // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================

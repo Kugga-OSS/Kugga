@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
 import org.springframework.data.redis.serializer.GenericToStringSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
@@ -28,12 +29,11 @@ public class NewMessageListener implements MessageListener {
     private static final Logger logger = LoggerFactory.getLogger(MsgServiceImpl.class);
 
     StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
-    private static final RedisSerializer<String> valueSerializer= new GenericToStringSerializer(Object.class);
 
     @Override
     public void onMessage(Message message, byte[] bytes) {
         String topic = stringRedisSerializer.deserialize(message.getChannel());
-        String msgVoString = valueSerializer.deserialize(message.getBody());
+        String msgVoString = new String(message.getBody());
         logger.info("Message Received --> pattern: {}，topic:{}，message: {}", new String(bytes), topic, msgVoString);
         MsgVo msgVo = JsonUtil.fromJson(msgVoString, MsgVo.class);
 

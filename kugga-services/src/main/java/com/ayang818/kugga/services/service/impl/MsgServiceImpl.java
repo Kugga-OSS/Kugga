@@ -15,6 +15,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.RedisTemplate;
+import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.Date;
@@ -43,7 +44,7 @@ public class MsgServiceImpl implements MsgService {
     UserRelationMapper userRelationMapper;
 
     @Autowired
-    RedisTemplate redisTemplate;
+    StringRedisTemplate redisTemplate;
 
     @Override
     public MsgVo sendMsg(MsgDto msgDto) {
@@ -103,8 +104,12 @@ public class MsgServiceImpl implements MsgService {
         }
 
         /* 更新未读消息*/
-        redisTemplate.opsForValue().increment(rUid+RedisConstants.TOTAL_UNRAED,1);
-        redisTemplate.opsForHash().increment(rUid+ RedisConstants.PERSONAL_UNREAD, sUid,1);
+        String totalKey = rUid.toString() + RedisConstants.TOTAL_UNRAED;
+        String personalKey = rUid.toString() + RedisConstants.PERSONAL_UNREAD;
+        redisTemplate.opsForValue().increment(totalKey, 1);
+        logger.info("总未读消息变更为{}", redisTemplate.opsForValue().get(totalKey));
+        redisTemplate.opsForHash().increment(personalKey, sUid.toString(), 1);
+        logger.info("与用户{}未读消息变更为{}", sUid.toString(), redisTemplate.opsForHash().get(personalKey, sUid.toString()));
 
         User sender = userMapper.selectByPrimaryKey(sUid);
         User receiver = userMapper.selectByPrimaryKey(rUid);
