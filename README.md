@@ -26,8 +26,9 @@ Modify some database configurations in ```pom.xml```  located on project root, i
 ## What dependencies you need 
 You need 
 1. JDK1.8 environment 
-2. MySQL database(and create a database named ```kugga```)
-3. Redis server
+2. Maven 3+
+3. MySQL database(and create a database named ```kugga```)
+4. Redis server
 
 I recommend you could install MySQL and Redis with [docker](https://www.docker.com/) or just use remote linux machine.
 

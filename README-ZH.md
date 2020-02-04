@@ -27,8 +27,9 @@ cd Kugga
 ## 需要安装的依赖
 你需要
 1. JDK1.8 environment 
-2. MySQL database(里面需要创建一个叫做 ```kugga```的数据库)
-3. Redis server
+2. Maven 3+
+3. MySQL database(里面需要创建一个叫做 ```kugga```的数据库)
+4. Redis server
 
 我推荐你使用[docker](https://www.docker.com)来安装MySQL和redis 或者直接使用你的远程Linux主机
 
