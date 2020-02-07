@@ -10,10 +10,14 @@ import com.ayang818.kugga.starter.pojo.ResultDto;
 public class Result {
 
     public static ResultDto ok(Object data) {
-        return new ResultDto(Status.OK, null, data);
+        return new ResultDto(Status.OK, data);
+    }
+
+    public static ResultDto authenticateFailed(Object data) {
+        return new ResultDto(Status.UN_AUTHORIZED, data);
     }
 
     public static ResultDto serverError(Object error) {
-        return new ResultDto(Status.SERVER_ERROR, error, null);
+        return new ResultDto(Status.SERVER_ERROR, error);
     }
 }

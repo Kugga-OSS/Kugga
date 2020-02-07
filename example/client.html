@@ -4,7 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta http-equiv="X-UA-Compatible" content="ie=edge">
-    <title>WebSocketTest</title>
+    <title>一起聊天吧</title>
+    <link rel="stylesheet" href="chat.css">
 </head>
 
 <div style="margin: 10px auto; border: black 1px solid; padding: 10px;">
@@ -22,9 +23,11 @@
     <input type="button" value="点击发送消息" onclick="Chat.sendMsg()">
 </div>
 
-<div>接收消息如下 : </div>
-<div id="receiveMsg" style="background: pink;"></div>
+<div>聊天记录</div>
+<ul id="msgList"></ul>
 <script type="application/javascript">
+    const chatList = [];
+    chatList.push("");
     function Message(sender, receiver, content)  {
         this.senderUid = sender;
         this.receiverUid = receiver;
@@ -37,9 +40,13 @@
                 Chat.socket = new WebSocket("ws://localhost:10086/ws");
                 Chat.socket.onmessage = function(message) {
                     console.log("receive message is: " + message.data);
-                    var receiveMsg = document.getElementById("receiveMsg");
-                    var html = receiveMsg.innerHTML;
-                    receiveMsg.innerHTML = html + "</br>" + message.data;
+                    var msgList = document.getElementById("msgList");
+                    var rData = JSON.parse(message.data);
+                    if (String(rData.senderUid) === String(document.getElementById("sender").value)) {
+                        msgList.innerHTML+="</br><p class='isSender'>"+rData.content+"</p>"
+                    } else {
+                        msgList.innerHTML+="</br><p class='notSender'>"+rData.content+"</p>"
+                    }
                 }
             } else {
                 alert("浏览器不支持websocket");

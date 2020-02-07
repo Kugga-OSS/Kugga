@@ -13,22 +13,31 @@ cd Kugga
 ```
 使用intellij-idea或者eclipse打开这个项目
 
-修改位于项目根目录的```pom.xml```里的一些配置，包括以下字段的内容
+如果你只是想在你的windows机器上测试这个项目，你需要先设置好下面这些环境变量。
 ```bash
-<host-name>localhost</host-name>
-<database-name>kugga</database-name>
-<mysql-port>3306</mysql-port>
-<username>root</username>
-<password>123</password>
-<database-url>jdbc:mysql://${host-name}:${mysql-port}/${database-name}</database-url>
-<redis-port>6379</redis-port>
+DATABASE_HOST="localhost"        // mysql server host
+DATABASE_PORT="3306"             // mysql server port
+DATABASE_USERNAME="root"         // mysql server user 
+DATABASE_PASSWORD="123"          // mysql server password
+REDIS_HOST="localhost"           // redis server id
+REDIS_PORT="6379"                // redis server post
+JWT_SECRET_KEY="random_string"   // json web token`s secret key
+```
+
+如果你想要在linux机器上运行```kugga```，你可以修改位于根目录的```init_variable.sh```文件里的配置，然后将这个文件传输到你的linux机器，
+并运行以下命令
+```bash
+chmod u+x init_variable.sh
+
+./init_variable.sh
 ```
 
 ## 需要安装的依赖
 你需要
 1. JDK1.8 environment 
-2. MySQL database(里面需要创建一个叫做 ```kugga```的数据库)
-3. Redis server
+2. Maven 3+
+3. MySQL database(里面需要创建一个叫做 ```kugga```的数据库)
+4. Redis server
 
 我推荐你使用[docker](https://www.docker.com)来安装MySQL和redis 或者直接使用你的远程Linux主机
 

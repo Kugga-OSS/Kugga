@@ -2,7 +2,7 @@
 
 [![CircleCI](https://circleci.com/gh/Kugga-OSS/Kugga/tree/dev.svg?style=svg)](https://circleci.com/gh/Kugga-OSS/Kugga/tree/dev)
 
-[README-ZH](README-ZH.md)
+[中文简介](README-ZH.md)
 
 ## How to start
 Clone this repository to your machine.
@@ -11,23 +11,32 @@ git clone git@github.com:Kugga-OSS/Kugga.git
 
 cd Kugga
 ```
-Open this project in intellij-idea or eclipse.
 
-Modify some database configurations in ```pom.xml```  located on project root, including these fields, maybe like this
+if you just want to test this project in your windows machine, set these environment variables firstly,
 ```bash
-<host-name>localhost</host-name>
-<database-name>kugga</database-name>
-<mysql-port>3306</mysql-port>
-<username>root</username>
-<password>123</password>
-<database-url>jdbc:mysql://${host-name}:${mysql-port}/${database-name}</database-url>
-<redis-port>6379</redis-port>
+DATABASE_HOST="localhost"        // mysql server host
+DATABASE_PORT="3306"             // mysql server port
+DATABASE_USERNAME="root"         // mysql server user 
+DATABASE_PASSWORD="123"          // mysql server password
+REDIS_HOST="localhost"           // redis server id
+REDIS_PORT="6379"                // redis server post
+JWT_SECRET_KEY="random_string"   // json web token`s secret key
 ```
+
+if you want to deploy it to a linux machine, you can modify the ```init_variable.sh```(on the root of the project) to your own setting, and transfer this file to your 
+linux machine. Then run the following commands.
+```
+chmod u+x init_variable.sh
+
+./init_variable.sh
+```
+
 ## What dependencies you need 
 You need 
 1. JDK1.8 environment 
-2. MySQL database(and create a database named ```kugga```)
-3. Redis server
+2. Maven 3+
+3. MySQL database(and create a database named ```kugga```)
+4. Redis server
 
 I recommend you could install MySQL and Redis with [docker](https://www.docker.com/) or just use remote linux machine.
 

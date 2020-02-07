@@ -100,7 +100,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
             connections.forEach(connection -> channelShortIdSet.add(connection.getChannelShortId()));
             channels.forEach(channel -> {
                 if (channelShortIdSet.contains(channel.id().asShortText())) {
-                    channel.writeAndFlush(new TextWebSocketFrame(String.format("收到json数据 : %s", jsonMsgVo)));
+                    channel.writeAndFlush(new TextWebSocketFrame(jsonMsgVo));
                 }
             });
         }

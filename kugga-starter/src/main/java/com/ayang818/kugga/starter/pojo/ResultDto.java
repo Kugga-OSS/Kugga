@@ -10,12 +10,10 @@ import lombok.Data;
 @Data
 public class ResultDto {
     String status;
-    Object error;
     Object data;
 
-    public ResultDto(String status, Object error, Object data) {
+    public ResultDto(String status, Object data) {
         this.status = status;
-        this.error = error;
         this.data = data;
     }
 }

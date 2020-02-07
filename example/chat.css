@@ -1,0 +1,9 @@
+.isSender {
+    color: blue;
+    margin: 10px 30%;
+}
+
+.notSender {
+    color: green;
+    margin: 10px 3%;
+}
