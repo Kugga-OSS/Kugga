@@ -4,7 +4,6 @@ import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
 import com.ayang818.kugga.services.service.UserService;
-import com.ayang818.kugga.starter.enums.Result;
 import com.ayang818.kugga.starter.enums.VoUtil;
 import com.ayang818.kugga.starter.pojo.ResultDto;
 import io.swagger.annotations.Api;
@@ -14,7 +13,11 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.servlet.tags.form.InputTag;
 
+import java.util.Arrays;
+import java.util.Optional;
+import java.util.Scanner;
 import java.util.UUID;
 
 /**

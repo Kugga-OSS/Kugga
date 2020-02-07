@@ -7,6 +7,7 @@ import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.EncryptUtil;
+import com.ayang818.kugga.utils.JwtUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -41,6 +42,7 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public LoginVo login(String username, String password) {
+        // check username
         UserExample userExample = new UserExample();
         userExample.createCriteria().andUsernameEqualTo(username);
         List<User> users;
@@ -50,9 +52,12 @@ public class UserServiceImpl implements UserService {
             logger.info(e.getMessage());
             return LoginVo.builder().message("服务端错误").state(3).build();
         }
+        // check password
         if (users != null && users.size() == 1) {
             User user = users.get(0);
             if (EncryptUtil.compare(password, user.getSalt(), user.getPassword())) {
+                // generate json web token, jwt`s payload include UID
+
                 return LoginVo.builder().message("登陆成功").state(1).build();
             } else {
                 return LoginVo.builder().message("密码错误").state(0).build();
