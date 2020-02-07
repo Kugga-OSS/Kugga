@@ -34,13 +34,12 @@
         <jwt.version>0.9.1</jwt.version>
         <shiro.version>1.4.0</shiro.version>
 
-        <host-name>119.23.240.115</host-name>
-        <database-name>kugga</database-name>
-        <mysql-port>3307</mysql-port>
-        <username>root</username>
-        <password>123</password>
-        <database-url>jdbc:mysql://${host-name}:${mysql-port}/${database-name}</database-url>
-        <redis-port>6379</redis-port>
+        <host-name>${env.DATABASE_HOST}</host-name>
+        <mysql-port>${env.DATABASE_PORT}</mysql-port>
+        <username>${env.DATABASE_USERNAME}</username>
+        <password>${env.DATABASE_PASSWORD}</password>
+        <database-url>jdbc:mysql://${host-name}:${mysql-port}/kugga</database-url>
+        <redis-port>${env.REDIS_PORT}</redis-port>
     </properties>
 
     <!--  里面按照parent里面的dependencyManagement的版本号来判断-->

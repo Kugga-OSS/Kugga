@@ -1,18 +1,22 @@
 package com.ayang818.kugga.utils;
 
-import com.ayang818.kugga.utils.enums.JwtConstant;
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.JwtBuilder;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import org.apache.tomcat.util.codec.binary.Base64;
-
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Component;
+import org.springframework.stereotype.Service;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import java.util.Date;
 
+@Component
 public class JwtUtil {
-    private String jianshu;
+
+    @Value("${jsonwebtoken.secret.key}")
+    String secretKey;
 
     /**
      * 由字符串生成加密key
@@ -20,7 +24,7 @@ public class JwtUtil {
      * @return
      */
     public SecretKey generalKey() {
-        String stringKey = jianshu + JwtConstant.JWT_SECRET;
+        String stringKey = secretKey;
         byte[] encodedKey = Base64.decodeBase64(stringKey);
         return new SecretKeySpec(encodedKey, 0, encodedKey.length, "AES");
     }

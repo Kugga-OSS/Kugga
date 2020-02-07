@@ -19,9 +19,6 @@ public class SwaggerConfig {
 
     @Bean
     public Docket api() {
-        System.out.println(System.getenv("DATABASE_URL"));
-        System.out.println(System.getenv("JAVA_HOME"));
-        System.out.println(System.getenv("NUMBER_OF_PROCESSORS"));
         return new Docket(DocumentationType.SWAGGER_2)
                 .select()
                 .apis(RequestHandlerSelectors.any())
