@@ -13,8 +13,6 @@ public class EncryptUtil {
     }
 
     public static Boolean compare(String password, String salt, String comparedPassword) {
-        System.out.println(new Md5Hash(password, salt).toString());
-        System.out.println(comparedPassword);
         return new Md5Hash(password, salt).toString().equals(comparedPassword);
     }
 }

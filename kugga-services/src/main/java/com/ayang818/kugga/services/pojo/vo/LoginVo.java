@@ -12,5 +12,6 @@ import lombok.Data;
 @Builder
 public class LoginVo implements Vo{
     String message;
+    String jwt;
     Integer state;
 }
