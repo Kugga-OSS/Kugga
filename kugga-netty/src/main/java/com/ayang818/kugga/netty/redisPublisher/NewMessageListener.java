@@ -23,9 +23,6 @@ import org.springframework.stereotype.Component;
 @Component
 public class NewMessageListener implements MessageListener {
 
-    @Autowired
-    ChatHandler chatHandler;
-
     private static final Logger logger = LoggerFactory.getLogger(MsgServiceImpl.class);
 
     StringRedisSerializer stringRedisSerializer = new StringRedisSerializer();
@@ -38,6 +35,6 @@ public class NewMessageListener implements MessageListener {
         MsgVo msgVo = JsonUtil.fromJson(msgVoString, MsgVo.class);
 
         /* 通过redis的发布订阅模式推送消息到消息接收方 */
-        chatHandler.pushMessage(msgVo.getReceiverUid(), msgVoString);
+        ChatHandler.pushMessage(msgVo.getReceiverUid(), msgVoString);
     }
 }

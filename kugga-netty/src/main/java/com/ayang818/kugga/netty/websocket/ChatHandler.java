@@ -49,7 +49,7 @@ import java.util.Set;
  *                               根据消息类别的不同做出不同的行为。
  *                               1. 若是消息，进行消息的存储
  *                               2. 若是新的Channel连接，拉取对应用户的未读消息。
- *                               3. 若是心跳包，不做该Handler做处理。
+ *                               3. 若是心跳包，不在该Handler做处理。
  *                               ————————————————————————————
  *
  *
@@ -89,11 +89,11 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     }
 
     /**
-     * @description 推送消息
+     * @description 推送消息, 这是个无状态的动作, 所以我选择使用static方法修饰
      * @param uid
      * @param jsonMsgVo
      */
-    public void pushMessage(Long uid, String jsonMsgVo) {
+    public static void pushMessage(Long uid, String jsonMsgVo) {
         Set<UserConnectionMap.Connection> connections = UserConnectionMap.get(String.valueOf(uid));
         if (connections != null && !connections.isEmpty()) {
             Set<String> channelShortIdSet = new HashSet<>();
