@@ -1,5 +1,6 @@
 package com.ayang818.kugga.netty.websocket;
 
+import com.ayang818.kugga.netty.Constant;
 import com.ayang818.kugga.netty.cache.ConnectionUserMap;
 import com.ayang818.kugga.netty.cache.UserConnectionMap;
 import com.ayang818.kugga.services.pojo.MsgDto;
@@ -7,13 +8,13 @@ import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.JsonUtil;
-import io.netty.channel.Channel;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -74,18 +75,35 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     @Override
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
-        // 将接收到的Json转化为ChatMessageDto对象
         MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
-        // ================ 随便发一条消息, 将用户注册到在线列表(不会用到生产环境) ===================
+        Integer msgType = msgDto.getMsgType();
         String shortId = context.channel().id().asShortText();
-        UserConnectionMap.put(msgDto.getSenderUid().toString(), shortId);
-        ConnectionUserMap.put(shortId, msgDto.getSenderUid().toString());
+        if (msgType == null) {
+            return;
+        }
 
-        // ================ 消息持久化 ==============
-        MsgVo msgVo = msgService.sendMsg(msgDto);
+        switch (msgType) {
+            case Constant.REGISTER:
+                UserConnectionMap.put(msgDto.getSenderUid().toString(), shortId);
+                ConnectionUserMap.put(shortId, msgDto.getSenderUid().toString());
+                logger.info("用户 {} 已注册到双向映射表", msgDto.getSenderUid());
+                break;
+            case Constant.NEWMSG:
+                // 消息持久化，并产生redis发布
+                MsgVo msgVo = msgService.sendMsg(msgDto);
+                // 回推消息，确认服务器收到消息
+                pushMessageToUser(msgVo.getSenderUid(), JsonUtil.toJson(msgVo));
+                break;
+            case Constant.ACK:
+                logger.info("收到心跳包");
+                context.channel().writeAndFlush(new TextWebSocketFrame("ping:pong"));
+                break;
+            case Constant.HEARTBEAT:
+                break;
+            default:
+                break;
+        }
 
-        // 取出接收用户用户的在线设备集合并回推消息
-        pushMessage(msgVo.getSenderUid(), JsonUtil.toJson(msgVo));
     }
 
     /**
@@ -93,7 +111,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
      * @param uid
      * @param jsonMsgVo
      */
-    public static void pushMessage(Long uid, String jsonMsgVo) {
+    public static void pushMessageToUser(Long uid, String jsonMsgVo) {
         Set<UserConnectionMap.Connection> connections = UserConnectionMap.get(String.valueOf(uid));
         if (connections != null && !connections.isEmpty()) {
             Set<String> channelShortIdSet = new HashSet<>();

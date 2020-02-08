@@ -14,7 +14,6 @@ import com.ayang818.kugga.utils.enums.RedisConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -51,7 +50,7 @@ public class MsgServiceImpl implements MsgService {
         Long sUid = msgDto.getSenderUid();
         Long rUid = msgDto.getReceiverUid();
         // 暂时全部为文本
-        String msgType = msgDto.getMsgType();
+        String msgType = msgDto.getContentType();
         String msgContent = msgDto.getContent();
         Date currentTime = new Date(System.currentTimeMillis());
 
@@ -107,9 +106,9 @@ public class MsgServiceImpl implements MsgService {
         String totalKey = rUid.toString() + RedisConstants.TOTAL_UNRAED;
         String personalKey = rUid.toString() + RedisConstants.PERSONAL_UNREAD;
         redisTemplate.opsForValue().increment(totalKey, 1);
-        logger.info("总未读消息变更为{}", redisTemplate.opsForValue().get(totalKey));
+        // logger.info("总未读消息变更为{}", redisTemplate.opsForValue().get(totalKey));
         redisTemplate.opsForHash().increment(personalKey, sUid.toString(), 1);
-        logger.info("与用户{}未读消息变更为{}", sUid.toString(), redisTemplate.opsForHash().get(personalKey, sUid.toString()));
+        // logger.info("与用户{}未读消息变更为{}", sUid.toString(), redisTemplate.opsForHash().get(personalKey, sUid.toString()));
 
         User sender = userMapper.selectByPrimaryKey(sUid);
         User receiver = userMapper.selectByPrimaryKey(rUid);
