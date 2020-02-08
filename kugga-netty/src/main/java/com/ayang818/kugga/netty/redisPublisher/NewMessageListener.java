@@ -6,12 +6,8 @@ import com.ayang818.kugga.services.service.impl.MsgServiceImpl;
 import com.ayang818.kugga.utils.JsonUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.connection.Message;
 import org.springframework.data.redis.connection.MessageListener;
-import org.springframework.data.redis.serializer.GenericToStringSerializer;
-import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
-import org.springframework.data.redis.serializer.RedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 import org.springframework.stereotype.Component;
 
@@ -22,9 +18,6 @@ import org.springframework.stereotype.Component;
  **/
 @Component
 public class NewMessageListener implements MessageListener {
-
-    @Autowired
-    ChatHandler chatHandler;
 
     private static final Logger logger = LoggerFactory.getLogger(MsgServiceImpl.class);
 
@@ -38,6 +31,6 @@ public class NewMessageListener implements MessageListener {
         MsgVo msgVo = JsonUtil.fromJson(msgVoString, MsgVo.class);
 
         /* 通过redis的发布订阅模式推送消息到消息接收方 */
-        chatHandler.pushMessage(msgVo.getReceiverUid(), msgVoString);
+        ChatHandler.pushMessageToUser(msgVo.getReceiverUid(), msgVoString);
     }
 }

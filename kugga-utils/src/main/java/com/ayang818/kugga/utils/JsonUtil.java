@@ -23,7 +23,4 @@ public class JsonUtil {
         return GSON;
     }
 
-    public static void main(String[] args) {
-        System.out.println("hello");
-    }
 }

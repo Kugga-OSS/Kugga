@@ -33,7 +33,7 @@ public class UserController {
     UserService userService;
 
     @ApiOperation("用户注册接口")
-    @RequestMapping(value = "/api/user/register", method = RequestMethod.POST)
+    @RequestMapping(value = "/api/user", method = RequestMethod.POST)
     public ResultDto register(@RequestParam("username") String username,
                               @RequestParam("password") String decryptPassword,
                               @RequestParam(value = "displayName", required = false) String displayName,
@@ -53,10 +53,15 @@ public class UserController {
     }
 
     @ApiOperation("用户登录接口")
-    @RequestMapping(value = "/api/user/login", method = RequestMethod.GET)
+    @RequestMapping(value = "/api/user", method = RequestMethod.GET)
     public ResultDto login(@RequestParam("username") String username,
                            @RequestParam("password") String password) {
         LoginVo loginVo = userService.login(username, password);
         return VoUtil.judge(loginVo);
+    }
+
+    @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)
+    public String chat() {
+        return "hello, you can reach here";
     }
 }

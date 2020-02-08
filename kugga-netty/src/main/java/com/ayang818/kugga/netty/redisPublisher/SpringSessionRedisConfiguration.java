@@ -2,6 +2,7 @@ package com.ayang818.kugga.netty.redisPublisher;
 
 import com.ayang818.kugga.utils.enums.RedisConstants;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -32,7 +33,7 @@ public class SpringSessionRedisConfiguration {
     @Autowired
     private NewMessageListener newMessageListener;
 
-    @Bean
+    @Bean(value = "jedisFactory")
     JedisConnectionFactory jedisConnectionFactory() {
         JedisConnectionFactory factory = new JedisConnectionFactory();
         factory.setHostName(redisHostName);
@@ -46,7 +47,7 @@ public class SpringSessionRedisConfiguration {
      * @return 设置序列化方式
      */
     @Bean
-    RedisCacheManager cacheManager(JedisConnectionFactory connectionFactory) {
+    RedisCacheManager cacheManager(@Qualifier("jedisFactory") JedisConnectionFactory connectionFactory) {
         //初始化一个RedisCacheWriter
         RedisCacheWriter redisCacheWriter = RedisCacheWriter.nonLockingRedisCacheWriter(connectionFactory);
 

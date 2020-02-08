@@ -26,48 +26,79 @@
 <div>聊天记录</div>
 <ul id="msgList"></ul>
 <script type="application/javascript">
-    const chatList = [];
-    chatList.push("");
-    function Message(sender, receiver, content)  {
+    const REGISTER = 1;
+    const NEWMSG = 2;
+    const ACK = 3;
+    const HEARTBEAT = 4;
+
+    function Message(sender, receiver, content, msgType)  {
         this.senderUid = sender;
         this.receiverUid = receiver;
         this.content = content;
+        this.msgType = msgType;
     }
+
     window.Chat = {
         socket: null,
+        sendHeartBeatTimes: 0,
+        receiveHeartBeatTimes: 0,
         init: function() {
-            if (window.WebSocket) {
-                Chat.socket = new WebSocket("ws://localhost:10086/ws");
-                Chat.socket.onmessage = function(message) {
-                    console.log("receive message is: " + message.data);
-                    var msgList = document.getElementById("msgList");
-                    var rData = JSON.parse(message.data);
-                    if (String(rData.senderUid) === String(document.getElementById("sender").value)) {
-                        msgList.innerHTML+="</br><p class='isSender'>"+rData.content+"</p>"
-                    } else {
-                        msgList.innerHTML+="</br><p class='notSender'>"+rData.content+"</p>"
-                    }
-                }
-            } else {
+            if (!window.WebSocket) {
                 alert("浏览器不支持websocket");
+                return;
+            }
+            Chat.socket = new WebSocket("ws://localhost:10086/ws");
+            Chat.socket.onmessage = function(message) {
+                if (message.data.length === 9 && message.data === "ping:pong") {
+                    Chat.receiveHeartBeatTimes++;
+                    if (Chat.receiveHeartBeatTimes - Chat.sendHeartBeatTimes > 1) {
+                        alert("我重连了");
+                        // 重连
+                        Chat.init();
+                    }
+                    return;
+                }
+                console.log("receive message is: " + message.data);
+                var msgList = document.getElementById("msgList");
+                var rData = JSON.parse(message.data);
+                if (String(rData.senderUid) === String(document.getElementById("sender").value)) {
+                    msgList.innerHTML+="</br><p class='isSender'>"+rData.content+"</p>"
+                } else {
+                    msgList.innerHTML+="</br><p class='notSender'>"+rData.content+"</p>"
+                }
+            };
+            Chat.socket.onopen = function (e) {
+                // 每15秒发送一次心跳包
+                setInterval(Chat.sendHeartBeatPackage, 1000*15);
+            };
+            Chat.socket.onerror = function () {
+
             }
         },
         sendMsg: function() {
             var sender = document.getElementById("sender").value;
             var receiver = document.getElementById("receiver").value;
             var content = document.getElementById("msgContent").value;
-            var message = new Message(sender, receiver, content);
+            var message = new Message(sender, receiver, content, NEWMSG);
             Chat.socket.send(JSON.stringify(message));
         },
         registerUser: function() {
             var sender = document.getElementById("username").value;
             document.getElementById("sender").value = sender;
-            var message = new Message(sender, null, null);
+            var message = new Message(sender, null, null, REGISTER);
             Chat.socket.send(JSON.stringify(message));
             alert("注册完成")
+        },
+        // 维护着两个数，一个是发出心跳次数，一个是接收到ping:pong的次数，当这两个数的差>=2，就超时重连
+        sendHeartBeatPackage: function () {
+            var sender = document.getElementById("username").value;
+            document.getElementById("sender").value = sender;
+            var message = new Message(null, null, "pong:ping", HEARTBEAT);
+            Chat.socket.send(JSON.stringify(message));
+            Chat.sendHeartBeatTimes++;
         }
     };
-
+setInterval
     Chat.init();
 </script>
 </body>

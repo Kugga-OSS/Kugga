@@ -14,5 +14,12 @@ public class MsgDto {
     Long senderUid;
     Long receiverUid;
     String content;
-    String msgType;
+    /**
+     * 消息内容类型 : 文本、文件、图片等
+     */
+    String contentType;
+    /**
+     * 消息类型 : ACK、发送新消息、心跳包、注册连接等
+     */
+    Integer msgType;
 }
