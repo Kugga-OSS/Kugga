@@ -73,7 +73,6 @@ public class UserServiceImpl implements UserService {
                 String jwt = jwtUtil.createJWT("kugga", JsonUtil.toJson(new JwtSubject(user.getUid())), DEFAULT_EXPIRED_TIME);
                 // set redis cache expired time as 7 days
                 stringRedisTemplate.opsForValue().set(jwt, String.valueOf(user.getUid()), DEFAULT_EXPIRED_TIME, TimeUnit.SECONDS);
-                logger.info(stringRedisTemplate.opsForValue().get(jwt));
                 return LoginVo.builder().message("登陆成功").jwt(jwt).state(1).build();
             } else {
                 return LoginVo.builder().message("密码错误").state(0).build();
