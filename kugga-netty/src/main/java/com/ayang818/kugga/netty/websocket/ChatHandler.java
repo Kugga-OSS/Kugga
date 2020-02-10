@@ -14,7 +14,6 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
-import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -84,8 +83,8 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
 
         switch (msgType) {
             case Constant.REGISTER:
-                UserConnectionMap.put(msgDto.getSenderUid().toString(), shortId);
-                ConnectionUserMap.put(shortId, msgDto.getSenderUid().toString());
+                UserConnectionMap.put(String.valueOf(msgDto.getSenderUid()), shortId);
+                ConnectionUserMap.put(shortId, String.valueOf(msgDto.getSenderUid()));
                 logger.info("用户 {} 已注册到双向映射表", msgDto.getSenderUid());
                 break;
             case Constant.NEWMSG:
