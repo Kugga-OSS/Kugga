@@ -1,5 +1,6 @@
 package com.ayang818.kugga.services.service.impl;
 
+import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.model.*;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.enums.MsgType;
@@ -7,7 +8,6 @@ import com.ayang818.kugga.services.mapper.MessageMapper;
 import com.ayang818.kugga.services.mapper.MessageRelationMapper;
 import com.ayang818.kugga.services.mapper.UserMapper;
 import com.ayang818.kugga.services.mapper.UserRelationMapper;
-import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
 import com.ayang818.kugga.utils.enums.RedisConstants;
@@ -50,7 +50,7 @@ public class MsgServiceImpl implements MsgService {
         Long sUid = msgDto.getSenderUid();
         Long rUid = msgDto.getReceiverUid();
         // 暂时全部为文本
-        String msgType = msgDto.getContentType();
+        Integer msgType = msgDto.getContentType();
         String msgContent = msgDto.getContent();
         Date currentTime = new Date(System.currentTimeMillis());
 

@@ -44,7 +44,7 @@ public class TokenInterceptor implements HandlerInterceptor {
                 Claims claims = jwtUtil.parseJWT(token);
                 String jsonString = claims.getSubject();
                 JwtSubject jwtSubject = JsonUtil.fromJson(jsonString, JwtSubject.class);
-                if (jwtSubject != null && jwtSubject.getUID() != null) {
+                if (jwtSubject != null) {
                     request.setAttribute("uid", jwtSubject.getUID());
                     return true;
                 }
