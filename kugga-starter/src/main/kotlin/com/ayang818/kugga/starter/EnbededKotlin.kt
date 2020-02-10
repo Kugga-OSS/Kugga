@@ -1,5 +1,6 @@
-package com.ayang818.kugga.starter
+@file:JvmName("EnbededKotlin")
 
+package com.ayang818.kugga.starter
 
 open class EnbededKotlin {
     fun main() {
