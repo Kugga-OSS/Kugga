@@ -14,6 +14,7 @@ import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
 import io.netty.handler.codec.http.websocketx.TextWebSocketFrame;
+import io.netty.util.AttributeKey;
 import io.netty.util.concurrent.GlobalEventExecutor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,6 +23,8 @@ import org.springframework.stereotype.Component;
 
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.atomic.AtomicLong;
 
 /**
  *                               ——————————————————————————
@@ -69,6 +72,16 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
 
     public static ChannelGroup channels = new DefaultChannelGroup(GlobalEventExecutor.INSTANCE);
 
+    /**
+     * 未收到ACK的列表
+     */
+    private static final AttributeKey<ConcurrentHashMap<Long, String>> NON_ACKED_MAP = AttributeKey.newInstance("non_acked_map");
+
+    /**
+     * 消息序列生成器  sequence-id-generator
+     */
+    private static final AttributeKey<AtomicLong> SID_GENERATOR = AttributeKey.newInstance("sid-generator");
+
     private static final Logger logger = LoggerFactory.getLogger(ChatHandler.class);
 
     @Override
@@ -77,15 +90,16 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
         Integer msgType = msgDto.getMsgType();
         String shortId = context.channel().id().asShortText();
-        if (msgType == null) {
-            return;
-        }
 
         switch (msgType) {
-            case Constant.REGISTER:
+            case Constant.ONLINE:
                 UserConnectionMap.put(String.valueOf(msgDto.getSenderUid()), shortId);
                 ConnectionUserMap.put(shortId, String.valueOf(msgDto.getSenderUid()));
-                logger.info("用户 {} 已注册到双向映射表", msgDto.getSenderUid());
+                // 为用户设置初始消息列表
+                context.channel().attr(NON_ACKED_MAP).set(new ConcurrentHashMap<>(16));
+                // 为用户设置私有的消息消息序号
+                context.channel().attr(SID_GENERATOR).set(new AtomicLong(0));
+                logger.info("用户 {} 已注册到双向映射表, 已经上线", msgDto.getSenderUid());
                 break;
             case Constant.NEWMSG:
                 // 消息持久化，并产生redis发布
@@ -94,10 +108,11 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
                 pushMessageToUser(msgVo.getSenderUid(), JsonUtil.toJson(msgVo));
                 break;
             case Constant.ACK:
-                logger.info("收到心跳包");
-                context.channel().writeAndFlush(new TextWebSocketFrame("ping:pong"));
+
                 break;
             case Constant.HEARTBEAT:
+                logger.info("收到心跳包");
+                context.channel().writeAndFlush(new TextWebSocketFrame("ping:pong"));
                 break;
             default:
                 break;

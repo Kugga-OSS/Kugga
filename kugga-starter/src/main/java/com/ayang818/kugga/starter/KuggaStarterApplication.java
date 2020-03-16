@@ -4,6 +4,9 @@ import org.mybatis.spring.annotation.MapperScan;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+/**
+ * @author 杨丰畅
+ */
 @MapperScan(basePackages = {"com.ayang818.kugga.services.mapper"})
 @SpringBootApplication(scanBasePackages = "com.ayang818.kugga")
 public class KuggaStarterApplication {
