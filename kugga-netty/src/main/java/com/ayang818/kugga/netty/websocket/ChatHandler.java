@@ -88,7 +88,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
         MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
-        Integer msgType = msgDto.getMsgType();
+        int msgType = msgDto.getMsgType();
         String shortId = context.channel().id().asShortText();
 
         switch (msgType) {

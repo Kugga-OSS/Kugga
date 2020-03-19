@@ -135,7 +135,7 @@
             <scope>test</scope>
         </dependency>
 
-        <!--    spring boot bean 监控工具    -->
+<!--    spring boot bean 监控工具    -->
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->
 <!--            <artifactId>spring-boot-starter-actuator</artifactId>-->
