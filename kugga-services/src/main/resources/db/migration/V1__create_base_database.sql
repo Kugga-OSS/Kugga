@@ -12,6 +12,9 @@ create table kugga_user
     constraint kugga_user_pk
         primary key (uid)
 );
+
+create unique index uk_username on kugga_user(username);
+
 create index idx_username_password_is_blocked
     on kugga_user (username, password, is_blocked);
 

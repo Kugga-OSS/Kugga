@@ -42,15 +42,13 @@ public class UserServiceImpl implements UserService {
 
     @Override
     public RegisterVo register(User newUser) {
-        newUser.setPassword(EncryptUtil.encrypt(newUser.getPassword(), newUser.getSalt()));
-        logger.info(newUser.toString());
         try {
             userMapper.insertSelective(newUser);
         } catch (Exception e) {
             logger.info(e.getMessage());
-            return RegisterVo.builder().message("fail").state(0).build();
+            return RegisterVo.builder().message("用户名已存在").state(0).build();
         }
-        return RegisterVo.builder().message("success").state(1).build();
+        return RegisterVo.builder().message("注册成功").state(1).build();
     }
 
     @Override
