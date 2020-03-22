@@ -6,6 +6,7 @@ import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.model.UserExample;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
+import com.ayang818.kugga.services.pojo.vo.UserVo;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
@@ -77,5 +78,19 @@ public class UserServiceImpl implements UserService {
             }
         }
         return LoginVo.builder().message("用户名不存在").state(0).build();
+    }
+
+    @Override
+    public UserVo queryUser(Long uid) {
+        User user = userMapper.selectByPrimaryKey(uid);
+        if (user == null) {
+            return UserVo.builder().state(0).build();
+        }
+        return UserVo.builder()
+                .state(1)
+                .avatar(user.getAvatar())
+                .displayName(user.getDisplayName())
+                .email(user.getEmail())
+                .build();
     }
 }

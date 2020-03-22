@@ -3,6 +3,7 @@ package com.ayang818.kugga.services.service;
 import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
+import com.ayang818.kugga.services.pojo.vo.UserVo;
 
 /**
  * @author 杨丰畅
@@ -24,4 +25,11 @@ public interface UserService {
      * @return LoginVo
      */
     LoginVo login(String username, String password);
+
+    /**
+     * @description 获取某一用户相关信息
+     * @param uid
+     * @return
+     */
+    UserVo queryUser(Long uid);
 }
