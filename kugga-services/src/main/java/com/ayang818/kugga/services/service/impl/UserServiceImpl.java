@@ -91,6 +91,7 @@ public class UserServiceImpl implements UserService {
                 .avatar(user.getAvatar())
                 .displayName(user.getDisplayName())
                 .email(user.getEmail())
+                .userName(user.getUsername())
                 .build();
     }
 }

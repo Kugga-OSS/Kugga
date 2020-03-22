@@ -4,6 +4,8 @@ import com.ayang818.kugga.services.pojo.JwtSubject;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -16,6 +18,8 @@ import javax.servlet.http.HttpServletResponse;
 @Component
 public class TokenInterceptor implements HandlerInterceptor {
 
+    private static final Logger logger = LoggerFactory.getLogger(TokenInterceptor.class);
+
     @Autowired
     JwtUtil jwtUtil;
 
@@ -24,6 +28,7 @@ public class TokenInterceptor implements HandlerInterceptor {
 
     /**
      * 通过拦截有两种方式，第一种是jwt在redis缓存中，第二种是解析出来的jwt符合规定
+     *
      * @param request
      * @param response
      * @param handler
@@ -37,6 +42,7 @@ public class TokenInterceptor implements HandlerInterceptor {
             // 获取redis缓存
             String uid = redisTemplate.opsForValue().get(token);
             if (uid != null) {
+                logger.info("用户 {} 的 jwt 击中缓存", uid);
                 request.setAttribute("uid", Long.parseLong(uid));
                 return true;
             } else {
