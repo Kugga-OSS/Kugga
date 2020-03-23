@@ -14,6 +14,9 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 
 @Component
 public class TokenInterceptor implements HandlerInterceptor {
@@ -48,6 +51,18 @@ public class TokenInterceptor implements HandlerInterceptor {
             } else {
                 // 缓存中没有就解析jwt
                 Claims claims = jwtUtil.parseJWT(token);
+                if (claims == null) {
+                    response.setContentType("application/json;charset=utf-8");
+                    response.getWriter().write("{\"status\":\"401\", \"data\": {\"message\": \"无效的身份验证\"}}");
+                    return false;
+                }
+                Date expireDate = claims.getExpiration();
+                // 若 jwt 已经过期，则重新登录
+                if (expireDate.before(new Date())) {
+                    response.setContentType("application/json;charset=utf-8");
+                    response.getWriter().write("{\"status\":\"401\", \"data\": {\"message\": \"身份验证过期\"}}");
+                    return false;
+                }
                 String jsonString = claims.getSubject();
                 JwtSubject jwtSubject = JsonUtil.fromJson(jsonString, JwtSubject.class);
                 if (jwtSubject != null) {
@@ -56,6 +71,8 @@ public class TokenInterceptor implements HandlerInterceptor {
                 }
             }
         }
+        response.setContentType("application/json;charset=utf-8");
+        response.getWriter().write("{\"status\":\"401\", \"data\": {\"message\": \"未身份验证\"}}");
         return false;
     }
 
