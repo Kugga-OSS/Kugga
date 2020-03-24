@@ -9,6 +9,10 @@ import com.ayang818.kugga.starter.pojo.ResultDto;
  **/
 public class Result {
 
+    public static ResultDto defaultRes() {
+        return new ResultDto(Status.UN_AUTHORIZED, null);
+    }
+
     public static ResultDto ok(Object data) {
         return new ResultDto(Status.OK, data);
     }

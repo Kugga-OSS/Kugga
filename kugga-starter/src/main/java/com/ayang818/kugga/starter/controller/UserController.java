@@ -3,11 +3,14 @@ package com.ayang818.kugga.starter.controller;
 import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
+import com.ayang818.kugga.services.pojo.vo.UserVo;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.starter.enums.VoUtil;
 import com.ayang818.kugga.starter.pojo.ResultDto;
+import com.ayang818.kugga.utils.EncryptUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
+import org.hibernate.validator.internal.util.privilegedactions.GetAnnotationAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -15,6 +18,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.tags.form.InputTag;
 
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
 import java.util.Arrays;
 import java.util.Optional;
 import java.util.Scanner;
@@ -48,6 +53,7 @@ public class UserController {
         newUser.setAvatar(avatar);
         newUser.setEmail(email);
         newUser.setBlocked(false);
+        newUser.setPassword(EncryptUtil.encrypt(newUser.getPassword(), newUser.getSalt()));
         RegisterVo registerVo = userService.register(newUser);
         return VoUtil.judge(registerVo);
     }
@@ -58,6 +64,15 @@ public class UserController {
                            @RequestParam("password") String password) {
         LoginVo loginVo = userService.login(username, password);
         return VoUtil.judge(loginVo);
+    }
+
+    @ApiOperation("获取某一用户信息")
+    @RequestMapping(value = "/auth_api/user", method = RequestMethod.GET)
+    public ResultDto getUser(HttpServletRequest req, HttpServletResponse res) {
+        Long uid = (Long) req.getAttribute("uid");
+        if (uid == null) return VoUtil.getDefault();
+        UserVo userVo = userService.queryUser(uid);
+        return VoUtil.judge(userVo);
     }
 
     @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)

@@ -35,6 +35,7 @@
         <mybatis.version>2.1.1</mybatis.version>
         <jwt.version>0.9.1</jwt.version>
         <shiro.version>1.4.0</shiro.version>
+        <druid.version>1.1.21</druid.version>
 
         <host-name>${env.DATABASE_HOST}</host-name>
         <mysql-port>${env.DATABASE_PORT}</mysql-port>
@@ -123,11 +124,13 @@
             <artifactId>embedded-redis</artifactId>
             <version>0.6</version>
         </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-stdlib-jdk8</artifactId>
             <version>${kotlin.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.jetbrains.kotlin</groupId>
             <artifactId>kotlin-test</artifactId>
@@ -135,7 +138,14 @@
             <scope>test</scope>
         </dependency>
 
-<!--    spring boot bean 监控工具    -->
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>${druid.version}</version>
+        </dependency>
+
+
+        <!--    spring boot bean 监控工具    -->
 <!--        <dependency>-->
 <!--            <groupId>org.springframework.boot</groupId>-->
 <!--            <artifactId>spring-boot-starter-actuator</artifactId>-->
