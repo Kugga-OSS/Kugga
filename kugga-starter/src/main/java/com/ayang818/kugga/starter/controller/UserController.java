@@ -11,20 +11,14 @@ import com.ayang818.kugga.starter.pojo.ResultDto;
 import com.ayang818.kugga.utils.EncryptUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
-import org.hibernate.validator.internal.util.privilegedactions.GetAnnotationAttribute;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.servlet.tags.form.InputTag;
-import sun.misc.Request;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.util.Arrays;
-import java.util.Optional;
-import java.util.Scanner;
 import java.util.UUID;
 
 /**
@@ -72,7 +66,7 @@ public class UserController {
     @RequestMapping(value = "/auth_api/user", method = RequestMethod.GET)
     public ResultDto getUser(HttpServletRequest req, HttpServletResponse res) {
         Long uid = (Long) req.getAttribute("uid");
-        if (uid == null) return VoUtil.getDefault();
+        if (uid == null) return VoUtil.getFailDefault();
         UserVo userVo = userService.queryUser(uid);
         return VoUtil.judge(userVo);
     }
@@ -82,6 +76,14 @@ public class UserController {
     public ResultDto searchUser(@RequestParam("keyword") String keyword) {
         SearchUserVo searchUserVo = userService.searchByKeyword(keyword);
         return VoUtil.judge(searchUserVo);
+    }
+
+    @ApiOperation("某一位用户向另一位用户发送好友请求")
+    @RequestMapping(value = "/auth_api/user/add", method = RequestMethod.POST)
+    public ResultDto addNewFriend(HttpServletRequest req, @RequestParam("otherUsername") String username) {
+        Long uid = (Long) req.getAttribute("uid");
+        Boolean success = userService.addNewFriend(uid, username);
+        return success ? VoUtil.getSuccessDefault() : VoUtil.getFailDefault();
     }
 
     @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)

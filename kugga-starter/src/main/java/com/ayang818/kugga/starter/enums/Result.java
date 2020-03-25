@@ -13,6 +13,10 @@ public class Result {
         return new ResultDto(Status.UN_AUTHORIZED, null);
     }
 
+    public static ResultDto defaultTrueRes() {
+        return new ResultDto(Status.OK, null);
+    }
+
     public static ResultDto ok(Object data) {
         return new ResultDto(Status.OK, data);
     }

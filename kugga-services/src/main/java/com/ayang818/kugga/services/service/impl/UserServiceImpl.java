@@ -1,9 +1,11 @@
 package com.ayang818.kugga.services.service.impl;
 
 import com.ayang818.kugga.services.mapper.UserMapper;
+import com.ayang818.kugga.services.mapper.UserRelationMapper;
 import com.ayang818.kugga.services.pojo.JwtSubject;
 import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.model.UserExample;
+import com.ayang818.kugga.services.pojo.model.UserRelation;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
 import com.ayang818.kugga.services.pojo.vo.SearchUserVo;
@@ -12,7 +14,6 @@ import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
-import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,7 +21,7 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
+import java.util.Date;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -36,6 +37,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    UserRelationMapper userRelationMapper;
 
     @Autowired
     JwtUtil jwtUtil;
@@ -71,6 +75,7 @@ public class UserServiceImpl implements UserService {
         // check password
         if (users != null && users.size() == 1) {
             User user = users.get(0);
+            // 将传入的密码加盐后比较存在数据库中已经加密的密码
             if (EncryptUtil.compare(password, user.getSalt(), user.getPassword())) {
                 // generate json web token, jwt`s payload include UID, and set expired time as 7 days
                 String jwt = jwtUtil.createJWT("kugga", JsonUtil.toJson(new JwtSubject(user.getUid())), DEFAULT_EXPIRED_TIME);
@@ -119,5 +124,28 @@ public class UserServiceImpl implements UserService {
                 .state(1)
                 .resList(resList)
                 .build();
+    }
+
+    @Override
+    public Boolean addNewFriend(Long ownUid, String otherUsername) {
+        // 查找第二方用户的UID
+        UserExample userExample = new UserExample();
+        userExample.createCriteria().andUsernameEqualTo(otherUsername);
+        List<User> users = userMapper.selectByExample(userExample);
+        User other = null;
+        if (users.size() > 0 && users.get(0) != null) {
+            other = users.get(0);
+        } else {
+            return false;
+        }
+
+        UserRelation ownRelation = new UserRelation();
+        UserRelation otherRelation = new UserRelation();
+        Date createTime = new Date(System.currentTimeMillis());
+
+        ownRelation.setOwnerUid(ownUid);
+        ownRelation.setOtherUid(other.getUid());
+        ownRelation.setCreateTime(createTime);
+        ownRelation.setPass();
     }
 }

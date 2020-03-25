@@ -35,9 +35,17 @@ public interface UserService {
     UserVo queryUser(Long uid);
 
     /**
-     * 通过关键词查询用户
+     * @description 通过关键词查询用户
      * @param keyword keyword 可能是用户名 username 也可能是昵称 displayName
      * @return
      */
     SearchUserVo searchByKeyword(String keyword);
+
+    /**
+     * @description 新增一条好友请求
+     * @param ownUid
+     * @param otherUsername
+     * @return
+     */
+    Boolean addNewFriend(Long ownUid, String otherUsername);
 }

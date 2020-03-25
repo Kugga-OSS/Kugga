@@ -10,8 +10,12 @@ import com.ayang818.kugga.starter.pojo.ResultDto;
  **/
 public class VoUtil {
 
-    public static ResultDto getDefault() {
+    public static ResultDto getFailDefault() {
         return Result.defaultRes();
+    }
+
+    public static ResultDto getSuccessDefault() {
+        return Result.defaultTrueRes();
     }
 
     public static ResultDto judge(Vo vo) {
