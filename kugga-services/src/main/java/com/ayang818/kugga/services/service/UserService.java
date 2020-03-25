@@ -3,6 +3,7 @@ package com.ayang818.kugga.services.service;
 import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
+import com.ayang818.kugga.services.pojo.vo.SearchUserVo;
 import com.ayang818.kugga.services.pojo.vo.UserVo;
 
 /**
@@ -32,4 +33,11 @@ public interface UserService {
      * @return
      */
     UserVo queryUser(Long uid);
+
+    /**
+     * 通过关键词查询用户
+     * @param keyword keyword 可能是用户名 username 也可能是昵称 displayName
+     * @return
+     */
+    SearchUserVo searchByKeyword(String keyword);
 }

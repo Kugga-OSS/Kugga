@@ -3,6 +3,7 @@ package com.ayang818.kugga.starter.controller;
 import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
+import com.ayang818.kugga.services.pojo.vo.SearchUserVo;
 import com.ayang818.kugga.services.pojo.vo.UserVo;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.starter.enums.VoUtil;
@@ -17,6 +18,7 @@ import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.tags.form.InputTag;
+import sun.misc.Request;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -73,6 +75,13 @@ public class UserController {
         if (uid == null) return VoUtil.getDefault();
         UserVo userVo = userService.queryUser(uid);
         return VoUtil.judge(userVo);
+    }
+
+    @ApiOperation("根据用户名/昵称搜索用户")
+    @RequestMapping(value = "/auth_api/user/search", method = RequestMethod.POST)
+    public ResultDto searchUser(@RequestParam("keyword") String keyword) {
+        SearchUserVo searchUserVo = userService.searchByKeyword(keyword);
+        return VoUtil.judge(searchUserVo);
     }
 
     @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)

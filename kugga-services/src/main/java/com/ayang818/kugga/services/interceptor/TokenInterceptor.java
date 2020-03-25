@@ -17,6 +17,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class TokenInterceptor implements HandlerInterceptor {
@@ -45,7 +46,6 @@ public class TokenInterceptor implements HandlerInterceptor {
             // 获取redis缓存
             String uid = redisTemplate.opsForValue().get(token);
             if (uid != null) {
-                logger.info("用户 {} 的 jwt 击中缓存", uid);
                 request.setAttribute("uid", Long.parseLong(uid));
                 return true;
             } else {
@@ -66,6 +66,8 @@ public class TokenInterceptor implements HandlerInterceptor {
                 String jsonString = claims.getSubject();
                 JwtSubject jwtSubject = JsonUtil.fromJson(jsonString, JwtSubject.class);
                 if (jwtSubject != null) {
+                    logger.info("用户 {} 的 jwt 未击中缓存，重新设置缓存", uid);
+                    redisTemplate.opsForValue().set(token, uid, expireDate.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                     request.setAttribute("uid", jwtSubject.getUID());
                     return true;
                 }

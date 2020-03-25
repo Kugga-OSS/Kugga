@@ -6,17 +6,21 @@ import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.model.UserExample;
 import com.ayang818.kugga.services.pojo.vo.LoginVo;
 import com.ayang818.kugga.services.pojo.vo.RegisterVo;
+import com.ayang818.kugga.services.pojo.vo.SearchUserVo;
 import com.ayang818.kugga.services.pojo.vo.UserVo;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
+import org.apache.commons.beanutils.BeanUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
 
@@ -92,6 +96,28 @@ public class UserServiceImpl implements UserService {
                 .displayName(user.getDisplayName())
                 .email(user.getEmail())
                 .userName(user.getUsername())
+                .build();
+    }
+
+    @Override
+    public SearchUserVo searchByKeyword(String keyword) {
+        UserExample userExample = new UserExample();
+        userExample.createCriteria().andUsernameEqualTo(keyword);
+        userExample.or().andDisplayNameLike("%" + keyword + "%");
+        List<User> tmp = userMapper.selectByExample(userExample);
+        List<UserVo> resList = new ArrayList<>(tmp.size());
+        for (User user : tmp) {
+            UserVo userVo = UserVo.builder()
+                    .userName(user.getUsername())
+                    .displayName(user.getDisplayName())
+                    .avatar(user.getAvatar())
+                    .email(user.getEmail())
+                    .build();
+            resList.add(userVo);
+        }
+        return SearchUserVo.builder()
+                .state(1)
+                .resList(resList)
                 .build();
     }
 }
