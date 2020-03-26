@@ -1,5 +1,8 @@
 package com.ayang818.kugga.services.pojo.model;
 
+import lombok.Data;
+
+@Data
 public class User {
     /**
      *

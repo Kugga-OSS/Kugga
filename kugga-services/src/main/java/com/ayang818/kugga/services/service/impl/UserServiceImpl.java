@@ -1,6 +1,7 @@
 package com.ayang818.kugga.services.service.impl;
 
 import com.ayang818.kugga.services.enums.UserRelationStatus;
+import com.ayang818.kugga.services.mapper.UserExtMapper;
 import com.ayang818.kugga.services.mapper.UserMapper;
 import com.ayang818.kugga.services.mapper.UserRelationMapper;
 import com.ayang818.kugga.services.pojo.JwtSubject;
@@ -22,6 +23,7 @@ import org.springframework.stereotype.Component;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -36,6 +38,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserMapper userMapper;
+
+    @Autowired
+    UserExtMapper userExtMapper;
 
     @Autowired
     UserRelationMapper userRelationMapper;
@@ -247,7 +252,7 @@ public class UserServiceImpl implements UserService {
                     .state(2)
                     .build();
         }
-        // 拉取我发出的好友请求, 这里需要的是我发起请求的对象，以及他应答的状态，
+        // 拉取我发出的好友请求, 这里需要的是我向谁发起的请求，以及他应答的状态，
         // 他的应答状态是在以他为owner，我为other的情况，由于是我发起的请求，所以sender=fasle
         // 这样就可以通过一次查询获取我需要的数据
         if (owner.equals(type)) {
@@ -261,7 +266,7 @@ public class UserServiceImpl implements UserService {
                     .relations(generateVofromUserRelations(sentRequests, owner))
                     .build();
         }
-        // 拉取我收到的好友请求，这里需要的是向我发去请求的对象，以及我的应答状态
+        // 拉取我收到的好友请求，这里需要的是谁向我发的请求，以及我的应答状态
         // 我的应答状态是在以我为owner，他为other，由于是我收到的请求，所以sender=false
         // 这样也可以通过一次查询获取我需要的数据
         else {
@@ -322,28 +327,46 @@ public class UserServiceImpl implements UserService {
         userRelationMapper.updateByExampleSelective(userRelation, userRelationExample);
     }
 
+    /**
+     * @description 根据List\<UserRelation> 生成 List\<UserRelationVo>，优化了前一个使用for循环内做数据库查询的方式，改为了用in做查询
+     * @param list
+     * @param type
+     * @return
+     */
     private List<UserRelationVo> generateVofromUserRelations(List<UserRelation> list, String type) {
         final String owner = "owner";
+        List<Long> uidList = new ArrayList<>(list.size());
         List<UserRelationVo> resList = new ArrayList<>(list.size());
-        for (UserRelation relation : list) {
-            User user = null;
-            if (owner.equals(type)) {
-                user = userMapper.selectByPrimaryKey(relation.getOwnerUid());
-            } else {
-                user = userMapper.selectByPrimaryKey(relation.getOtherUid());
+        if (owner.equals(type)) {
+            for (UserRelation userRelation : list) {
+                uidList.add(userRelation.getOwnerUid());
             }
-            UserVo userVo = UserVo.builder()
-                    .userName(user.getUsername())
-                    .avatar(user.getAvatar())
-                    .displayName(user.getDisplayName())
-                    .email(user.getEmail())
-                    .build();
-            UserRelationVo userRelationVo = UserRelationVo.builder()
-                    .other(userVo)
-                    .createTime(relation.getCreateTime())
-                    .status(relation.getPass())
-                    .build();
-            resList.add(userRelationVo);
+        } else {
+            for (UserRelation userRelation : list) {
+                uidList.add(userRelation.getOtherUid());
+            }
+        }
+        if (list.size() == 0) return resList;
+        List<User> users = userExtMapper.selectAllByUid(uidList);
+        for (UserRelation relation : list) {
+            Long targetId = owner.equals(type) ? relation.getOwnerUid() : relation.getOtherUid();
+            for (User tmp : users) {
+                if (tmp.getUid().equals(targetId)) {
+                    UserVo userVo = UserVo.builder()
+                            .userName(tmp.getUsername())
+                            .avatar(tmp.getAvatar())
+                            .displayName(tmp.getDisplayName())
+                            .email(tmp.getEmail())
+                            .build();
+                    UserRelationVo userRelationVo = UserRelationVo.builder()
+                            .other(userVo)
+                            .createTime(relation.getCreateTime())
+                            .status(relation.getPass())
+                            .build();
+                    resList.add(userRelationVo);
+                    break;
+                }
+            }
         }
         return resList;
     }
