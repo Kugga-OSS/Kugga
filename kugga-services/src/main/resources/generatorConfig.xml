@@ -50,6 +50,7 @@
 
         <table schema="kugga" tableName="kugga_user_relation" domainObjectName="UserRelation">
             <columnOverride column="is_pass" property="pass" />
+            <columnOverride column="is_sender" property="sender" />
         </table>
 
     </context>

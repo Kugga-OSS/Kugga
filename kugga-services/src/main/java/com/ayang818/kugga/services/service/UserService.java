@@ -45,4 +45,11 @@ public interface UserService {
      * @return
      */
     AddFriendResVo addNewFriend(Long ownUid, String otherUsername);
+
+    /**
+     * @description 拉取某个用户收到/发出的好友请求
+     * @param uid
+     * @param type
+     */
+    PullFriendRequestVo pullFriendRequest(Long uid, String type);
 }

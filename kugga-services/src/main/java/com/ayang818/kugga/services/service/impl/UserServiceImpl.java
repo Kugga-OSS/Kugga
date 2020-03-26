@@ -212,28 +212,69 @@ public class UserServiceImpl implements UserService {
             }
         }
 
-        UserRelation ownRelation = new UserRelation();
+        UserRelation ownerRelation = new UserRelation();
         UserRelation otherRelation = new UserRelation();
         Date createTime = new Date(System.currentTimeMillis());
 
         // 插入请求方关系
-        ownRelation.setOwnerUid(ownerUid);
-        ownRelation.setOtherUid(other.getUid());
-        ownRelation.setCreateTime(createTime);
-        ownRelation.setPass(UserRelationStatus.SUCCESS);
-
+        ownerRelation.setOwnerUid(ownerUid);
+        ownerRelation.setOtherUid(other.getUid());
+        ownerRelation.setCreateTime(createTime);
+        ownerRelation.setPass(UserRelationStatus.SUCCESS);
+        ownerRelation.setSender(true);
+        userRelationMapper.insertSelective(ownerRelation);
 
         // 插入被请求方关系
         otherRelation.setOwnerUid(other.getUid());
         otherRelation.setOtherUid(ownerUid);
         otherRelation.setCreateTime(createTime);
         otherRelation.setPass(UserRelationStatus.WAITING);
+        otherRelation.setSender(false);
         userRelationMapper.insertSelective(otherRelation);
 
         return AddFriendResVo.builder()
                 .state(1)
                 .message("已发送好友请求")
                 .build();
+    }
+
+    @Override
+    public PullFriendRequestVo pullFriendRequest(Long uid, String type) {
+        final String owner = "owner";
+        final String other = "other";
+        if (!owner.equals(type) && !other.equals(type)) {
+            return PullFriendRequestVo.builder()
+                    .state(2)
+                    .build();
+        }
+        // 拉取我发出的好友请求, 这里需要的是我发起请求的对象，以及他应答的状态，
+        // 他的应答状态是在以他为owner，我为other的情况，由于是我发起的请求，所以sender=fasle
+        // 这样就可以通过一次查询获取我需要的数据
+        if (owner.equals(type)) {
+            UserRelationExample example = new UserRelationExample();
+            example.createCriteria()
+                    .andOtherUidEqualTo(uid)
+                    .andSenderEqualTo(false);
+            List<UserRelation> sentRequests = userRelationMapper.selectByExample(example);
+            return PullFriendRequestVo.builder()
+                    .state(1)
+                    .relations(generateVofromUserRelations(sentRequests, owner))
+                    .build();
+        }
+        // 拉取我收到的好友请求，这里需要的是向我发去请求的对象，以及我的应答状态
+        // 我的应答状态是在以我为owner，他为other，由于是我收到的请求，所以sender=false
+        // 这样也可以通过一次查询获取我需要的数据
+        else {
+            UserRelationExample example = new UserRelationExample();
+            example.createCriteria()
+                    .andOwnerUidEqualTo(uid)
+                    .andSenderEqualTo(false);
+            List<UserRelation> receiveRequests = userRelationMapper.selectByExample(example);
+            return PullFriendRequestVo.builder()
+                    .state(1)
+                    .relations(generateVofromUserRelations(receiveRequests, other))
+                    .build();
+        }
     }
 
     private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {
@@ -246,5 +287,31 @@ public class UserServiceImpl implements UserService {
                 .andOwnerUidEqualTo(ownerUid)
                 .andOtherUidEqualTo(otherUid);
         userRelationMapper.updateByExampleSelective(userRelation, userRelationExample);
+    }
+
+    private List<UserRelationVo> generateVofromUserRelations(List<UserRelation> list, String type) {
+        final String owner = "owner";
+        List<UserRelationVo> resList = new ArrayList<>(list.size());
+        for (UserRelation relation : list) {
+            User user = null;
+            if (owner.equals(type)) {
+                user = userMapper.selectByPrimaryKey(relation.getOwnerUid());
+            } else {
+                user = userMapper.selectByPrimaryKey(relation.getOtherUid());
+            }
+            UserVo userVo = UserVo.builder()
+                    .userName(user.getUsername())
+                    .avatar(user.getAvatar())
+                    .displayName(user.getDisplayName())
+                    .email(user.getEmail())
+                    .build();
+            UserRelationVo userRelationVo = UserRelationVo.builder()
+                    .other(userVo)
+                    .createTime(relation.getCreateTime())
+                    .status(relation.getPass())
+                    .build();
+            resList.add(userRelationVo);
+        }
+        return resList;
     }
 }
