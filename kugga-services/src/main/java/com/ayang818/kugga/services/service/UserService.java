@@ -52,4 +52,12 @@ public interface UserService {
      * @param type
      */
     PullFriendRequestVo pullFriendRequest(Long uid, String type);
+
+    /**
+     * @description 处理收到的加好友请求
+     * @param uid
+     * @param otherUsername
+     * @param type
+     */
+    HandleRequestVo handleRequest(Long uid, String otherUsername, String type);
 }

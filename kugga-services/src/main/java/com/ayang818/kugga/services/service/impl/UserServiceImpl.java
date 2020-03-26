@@ -277,6 +277,39 @@ public class UserServiceImpl implements UserService {
         }
     }
 
+    @Override
+    public HandleRequestVo handleRequest(Long ownerUid, String otherUsername, String type) {
+        final String agree = "agree";
+        final String reject = "reject";
+        UserExample example = new UserExample();
+        example.createCriteria().andUsernameEqualTo(otherUsername);
+        List<User> users = userMapper.selectByExample(example);
+        User other = null;
+        if (users.size() > 0) {
+            other = users.get(0);
+        } else {
+            return HandleRequestVo.builder()
+                    .state(2)
+                    .message("对方账号已删除")
+                    .build();
+        }
+        Date current = new Date(System.currentTimeMillis());
+        if (agree.equals(type)) {
+            updateUserRelationStatus(ownerUid, other.getUid(), UserRelationStatus.SUCCESS, current);
+        } else if (reject.equals(type)) {
+            updateUserRelationStatus(ownerUid, other.getUid(), UserRelationStatus.FAIL, current);
+        } else {
+            return HandleRequestVo.builder()
+                    .state(2)
+                    .message("非法操作！")
+                    .build();
+        }
+        return HandleRequestVo.builder()
+                .state(1)
+                .message(agree.equals(type) ? "添加好友成功！" : "拒绝成功！")
+                .build();
+    }
+
     private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {
         UserRelation userRelation = new UserRelation();
         userRelation.setPass(status);
