@@ -1,8 +1,7 @@
 package com.ayang818.kugga.services.service;
 
 import com.ayang818.kugga.services.pojo.model.User;
-import com.ayang818.kugga.services.pojo.vo.LoginVo;
-import com.ayang818.kugga.services.pojo.vo.RegisterVo;
+import com.ayang818.kugga.services.pojo.vo.*;
 
 /**
  * @author 杨丰畅
@@ -24,4 +23,41 @@ public interface UserService {
      * @return LoginVo
      */
     LoginVo login(String username, String password);
+
+    /**
+     * @description 获取某一用户相关信息
+     * @param uid
+     * @return
+     */
+    UserVo queryUser(Long uid);
+
+    /**
+     * @description 通过关键词查询用户
+     * @param keyword keyword 可能是用户名 username 也可能是昵称 displayName
+     * @return
+     */
+    SearchUserVo searchByKeyword(String keyword);
+
+    /**
+     * @description 新增一条好友请求, 状态变更见 UserRelationStatus 类
+     * @param ownUid
+     * @param otherUsername
+     * @return
+     */
+    AddFriendResVo addNewFriend(Long ownUid, String otherUsername);
+
+    /**
+     * @description 拉取某个用户收到/发出的好友请求
+     * @param uid
+     * @param type
+     */
+    PullFriendRequestVo pullFriendRequest(Long uid, String type);
+
+    /**
+     * @description 处理收到的加好友请求
+     * @param uid
+     * @param otherUsername
+     * @param type
+     */
+    HandleRequestVo handleRequest(Long uid, String otherUsername, String type);
 }

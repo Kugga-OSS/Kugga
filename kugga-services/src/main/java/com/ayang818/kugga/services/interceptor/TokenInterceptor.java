@@ -4,6 +4,8 @@ import com.ayang818.kugga.services.pojo.JwtSubject;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
 import io.jsonwebtoken.Claims;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
@@ -12,9 +14,15 @@ import org.springframework.web.servlet.ModelAndView;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 @Component
 public class TokenInterceptor implements HandlerInterceptor {
+
+    private static final Logger logger = LoggerFactory.getLogger(TokenInterceptor.class);
 
     @Autowired
     JwtUtil jwtUtil;
@@ -24,6 +32,7 @@ public class TokenInterceptor implements HandlerInterceptor {
 
     /**
      * 通过拦截有两种方式，第一种是jwt在redis缓存中，第二种是解析出来的jwt符合规定
+     *
      * @param request
      * @param response
      * @param handler
@@ -42,14 +51,30 @@ public class TokenInterceptor implements HandlerInterceptor {
             } else {
                 // 缓存中没有就解析jwt
                 Claims claims = jwtUtil.parseJWT(token);
+                if (claims == null) {
+                    response.setContentType("application/json;charset=utf-8");
+                    response.getWriter().write("{\"status\":\"401\", \"data\": {\"message\": \"无效的身份验证\"}}");
+                    return false;
+                }
+                Date expireDate = claims.getExpiration();
+                // 若 jwt 已经过期，则重新登录
+                if (expireDate.before(new Date())) {
+                    response.setContentType("application/json;charset=utf-8");
+                    response.getWriter().write("{\"status\":\"401\", \"data\": {\"message\": \"身份验证过期\"}}");
+                    return false;
+                }
                 String jsonString = claims.getSubject();
                 JwtSubject jwtSubject = JsonUtil.fromJson(jsonString, JwtSubject.class);
                 if (jwtSubject != null) {
+                    logger.info("用户 {} 的 jwt 未击中缓存，重新设置缓存", uid);
+                    redisTemplate.opsForValue().set(token, uid, expireDate.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                     request.setAttribute("uid", jwtSubject.getUID());
                     return true;
                 }
             }
         }
+        response.setContentType("application/json;charset=utf-8");
+        response.getWriter().write("{\"status\":\"401\", \"data\": {\"message\": \"未身份验证\"}}");
         return false;
     }
 

@@ -9,6 +9,14 @@ import com.ayang818.kugga.starter.pojo.ResultDto;
  **/
 public class Result {
 
+    public static ResultDto defaultRes() {
+        return new ResultDto(Status.UN_AUTHORIZED, null);
+    }
+
+    public static ResultDto defaultTrueRes() {
+        return new ResultDto(Status.OK, null);
+    }
+
     public static ResultDto ok(Object data) {
         return new ResultDto(Status.OK, data);
     }
@@ -19,5 +27,9 @@ public class Result {
 
     public static ResultDto serverError(Object error) {
         return new ResultDto(Status.SERVER_ERROR, error);
+    }
+
+    public static ResultDto reject(Object error) {
+        return new ResultDto(Status.REJECT, error);
     }
 }

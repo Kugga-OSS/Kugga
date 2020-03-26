@@ -12,10 +12,11 @@ create table kugga_user
     constraint kugga_user_pk
         primary key (uid)
 );
+
+create unique index uk_username on kugga_user(username);
+
 create index idx_username_password_is_blocked
     on kugga_user (username, password, is_blocked);
-
-insert into kugga_user(username, display_name, password, salt,email, is_blocked) values('ayang818', 'ayang818', '480f5d12014d104191c9af1e285ebafd', 'gums','ayany@qq.com', 0),('ayang919', 'ayang919', 'badd0779414c5e7dfd6310ec4ac32aac', 'kakaka','ayany@qq.com', 0);
 
 -- 消息内容表
 create table kugga_message_content
@@ -49,6 +50,7 @@ create table kugga_user_relation
     other_uid bigint unsigned not null comment '关系第二方',
     last_mid bigint unsigned null comment '最后一条消息',
     is_pass tinyint(2) not null comment '0表示未通过,1表示等待中,2表示通过',
+    is_sender tinyint(1) not null comment '是否是主动发出请求的人',
     create_time timestamp not null,
     constraint kugga_user_relation_pk
         unique (owner_uid, other_uid)
