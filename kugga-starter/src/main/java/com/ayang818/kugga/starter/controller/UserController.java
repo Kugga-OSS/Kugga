@@ -1,10 +1,7 @@
 package com.ayang818.kugga.starter.controller;
 
 import com.ayang818.kugga.services.pojo.model.User;
-import com.ayang818.kugga.services.pojo.vo.LoginVo;
-import com.ayang818.kugga.services.pojo.vo.RegisterVo;
-import com.ayang818.kugga.services.pojo.vo.SearchUserVo;
-import com.ayang818.kugga.services.pojo.vo.UserVo;
+import com.ayang818.kugga.services.pojo.vo.*;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.starter.enums.VoUtil;
 import com.ayang818.kugga.starter.pojo.ResultDto;
@@ -82,8 +79,8 @@ public class UserController {
     @RequestMapping(value = "/auth_api/user/add", method = RequestMethod.POST)
     public ResultDto addNewFriend(HttpServletRequest req, @RequestParam("otherUsername") String username) {
         Long uid = (Long) req.getAttribute("uid");
-        Boolean success = userService.addNewFriend(uid, username);
-        return success ? VoUtil.getSuccessDefault() : VoUtil.getFailDefault();
+        AddFriendResVo addFriendResVo = userService.addNewFriend(uid, username);
+        return VoUtil.judge(addFriendResVo);
     }
 
     @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)

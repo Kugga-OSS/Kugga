@@ -1,10 +1,7 @@
 package com.ayang818.kugga.services.service;
 
 import com.ayang818.kugga.services.pojo.model.User;
-import com.ayang818.kugga.services.pojo.vo.LoginVo;
-import com.ayang818.kugga.services.pojo.vo.RegisterVo;
-import com.ayang818.kugga.services.pojo.vo.SearchUserVo;
-import com.ayang818.kugga.services.pojo.vo.UserVo;
+import com.ayang818.kugga.services.pojo.vo.*;
 
 /**
  * @author 杨丰畅
@@ -42,10 +39,10 @@ public interface UserService {
     SearchUserVo searchByKeyword(String keyword);
 
     /**
-     * @description 新增一条好友请求
+     * @description 新增一条好友请求, 状态变更见 UserRelationStatus 类
      * @param ownUid
      * @param otherUsername
      * @return
      */
-    Boolean addNewFriend(Long ownUid, String otherUsername);
+    AddFriendResVo addNewFriend(Long ownUid, String otherUsername);
 }

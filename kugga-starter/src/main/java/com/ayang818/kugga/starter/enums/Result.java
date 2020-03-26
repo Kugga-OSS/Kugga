@@ -28,4 +28,8 @@ public class Result {
     public static ResultDto serverError(Object error) {
         return new ResultDto(Status.SERVER_ERROR, error);
     }
+
+    public static ResultDto reject(Object error) {
+        return new ResultDto(Status.REJECT, error);
+    }
 }

@@ -10,4 +10,5 @@ public interface Status {
     String UN_AUTHORIZED = "401";
     String PAGE_NOT_FOUND = "404";
     String SERVER_ERROR = "500";
+    String REJECT = "403";
 }

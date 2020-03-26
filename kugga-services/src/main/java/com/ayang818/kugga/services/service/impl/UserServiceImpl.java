@@ -1,15 +1,14 @@
 package com.ayang818.kugga.services.service.impl;
 
+import com.ayang818.kugga.services.enums.UserRelationStatus;
 import com.ayang818.kugga.services.mapper.UserMapper;
 import com.ayang818.kugga.services.mapper.UserRelationMapper;
 import com.ayang818.kugga.services.pojo.JwtSubject;
 import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.model.UserExample;
 import com.ayang818.kugga.services.pojo.model.UserRelation;
-import com.ayang818.kugga.services.pojo.vo.LoginVo;
-import com.ayang818.kugga.services.pojo.vo.RegisterVo;
-import com.ayang818.kugga.services.pojo.vo.SearchUserVo;
-import com.ayang818.kugga.services.pojo.vo.UserVo;
+import com.ayang818.kugga.services.pojo.model.UserRelationExample;
+import com.ayang818.kugga.services.pojo.vo.*;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
@@ -127,7 +126,7 @@ public class UserServiceImpl implements UserService {
     }
 
     @Override
-    public Boolean addNewFriend(Long ownUid, String otherUsername) {
+    public AddFriendResVo addNewFriend(Long ownerUid, String otherUsername) {
         // 查找第二方用户的UID
         UserExample userExample = new UserExample();
         userExample.createCriteria().andUsernameEqualTo(otherUsername);
@@ -136,16 +135,116 @@ public class UserServiceImpl implements UserService {
         if (users.size() > 0 && users.get(0) != null) {
             other = users.get(0);
         } else {
-            return false;
+            return AddFriendResVo.builder()
+                    .state(2)
+                    .message("该用户已注销")
+                    .build();
+        }
+        // 不能添加自己为好友
+        if (other.getUid().equals(ownerUid)) {
+            return AddFriendResVo.builder()
+                    .state(2)
+                    .message("不能添加自己为好友")
+                    .build();
+        }
+        // 插入前先检查是否已经有添加记录了
+        UserRelationExample example = new UserRelationExample();
+        example.createCriteria()
+                .andOwnerUidEqualTo(ownerUid)
+                .andOtherUidEqualTo(other.getUid());
+        List<UserRelation> checkOwn = userRelationMapper.selectByExample(example);
+        example.clear();
+        example.createCriteria()
+                .andOwnerUidEqualTo(other.getUid())
+                .andOtherUidEqualTo(ownerUid);
+        List<UserRelation> checkOther = userRelationMapper.selectByExample(example);
+        // 若有记录了，则根据状态不同做处理
+        if (checkOwn.size() == 1 && checkOther.size() == 1) {
+            UserRelation cntOwnRecord = checkOwn.get(0);
+            UserRelation cntOtherRecord = checkOther.get(0);
+            Byte ownerStatus = cntOwnRecord.getPass();
+            Byte otherStatus = cntOtherRecord.getPass();
+
+            final byte wait = UserRelationStatus.WAITING;
+            final byte success = UserRelationStatus.SUCCESS;
+            final byte fail = UserRelationStatus.FAIL;
+
+            if (ownerStatus == success) {
+                // 双方已经是好友了
+                if (otherStatus == success) {
+                    return AddFriendResVo.builder()
+                            .state(1)
+                            .message("你们已经是好友啦")
+                            .build();
+                }
+                // 对方尚未处理请求
+                if (otherStatus == wait) {
+                    return AddFriendResVo.builder()
+                            .state(1)
+                            .message("已发送请求，等待对方处理，请不要重复发送请求")
+                            .build();
+                }
+                // 对方已拒绝，重新发送添加请求
+                if (otherStatus == fail) {
+                    Date createTime = new Date(System.currentTimeMillis());
+                    // 更新对方状态和插入时间
+                    updateUserRelationStatus(other.getUid(), ownerUid, wait, createTime);
+                    // 更新自己状态和插入时间
+                    updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
+                    return AddFriendResVo.builder()
+                            .state(1)
+                            .message("已重新发送请求，等待对方处理")
+                            .build();
+                }
+                // 若对方已经同意，并且自己未同意，此时直接添加为好友
+                if (ownerStatus == wait || ownerStatus == fail) {
+                    Date createTime = new Date(System.currentTimeMillis());
+                    // 更新对方状态和插入时间
+                    updateUserRelationStatus(other.getUid(), ownerUid, success, createTime);
+                    // 更新自己状态和插入时间
+                    updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
+
+                    return AddFriendResVo.builder()
+                            .state(1)
+                            .message("你们已经成功成为好友")
+                            .build();
+                }
+            }
         }
 
         UserRelation ownRelation = new UserRelation();
         UserRelation otherRelation = new UserRelation();
         Date createTime = new Date(System.currentTimeMillis());
 
-        ownRelation.setOwnerUid(ownUid);
+        // 插入请求方关系
+        ownRelation.setOwnerUid(ownerUid);
         ownRelation.setOtherUid(other.getUid());
         ownRelation.setCreateTime(createTime);
-        ownRelation.setPass();
+        ownRelation.setPass(UserRelationStatus.SUCCESS);
+
+
+        // 插入被请求方关系
+        otherRelation.setOwnerUid(other.getUid());
+        otherRelation.setOtherUid(ownerUid);
+        otherRelation.setCreateTime(createTime);
+        otherRelation.setPass(UserRelationStatus.WAITING);
+        userRelationMapper.insertSelective(otherRelation);
+
+        return AddFriendResVo.builder()
+                .state(1)
+                .message("已发送好友请求")
+                .build();
+    }
+
+    private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {
+        UserRelation userRelation = new UserRelation();
+        userRelation.setPass(status);
+        userRelation.setCreateTime(current);
+
+        UserRelationExample userRelationExample = new UserRelationExample();
+        userRelationExample.createCriteria()
+                .andOwnerUidEqualTo(ownerUid)
+                .andOtherUidEqualTo(otherUid);
+        userRelationMapper.updateByExampleSelective(userRelation, userRelationExample);
     }
 }

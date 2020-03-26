@@ -23,8 +23,10 @@ public class VoUtil {
             return Result.ok(vo);
         } else if (vo.getState() == 0) {
             return Result.authenticateFailed(vo);
+        } else if (vo.getState() == 2){
+            return Result.reject(vo);
         } else {
-            return Result.serverError(vo);
+            return getFailDefault();
         }
     }
 }
