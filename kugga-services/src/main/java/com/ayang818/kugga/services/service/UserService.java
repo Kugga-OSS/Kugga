@@ -60,4 +60,10 @@ public interface UserService {
      * @param type
      */
     HandleRequestVo handleRequest(Long uid, String otherUsername, String type);
+
+    /**
+     * @description 拉取某位用户的好友列表
+     * @param uid
+     */
+    FriendListVo fetchFriendList(Long uid);
 }

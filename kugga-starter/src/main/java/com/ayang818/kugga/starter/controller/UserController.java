@@ -83,6 +83,32 @@ public class UserController {
         return VoUtil.judge(addFriendResVo);
     }
 
+    @ApiOperation("拉取某个用户收到/发出的好友请求，其中type参数为枚举字符串，若为owner则拉取自己发出的请求，为other则拉取自己收到的请求")
+    @RequestMapping(value = "/auth_api/user/friendRequest", method = RequestMethod.GET)
+    public ResultDto pullRequest(HttpServletRequest req, @RequestParam("type") String type) {
+        Long uid = (Long) req.getAttribute("uid");
+        PullFriendRequestVo pullFriendRequestVo = userService.pullFriendRequest(uid, type);
+        return VoUtil.judge(pullFriendRequestVo);
+    }
+
+    @ApiOperation("处理自己收到的请求，其中type参数为枚举字符串，若为agree则同意加为好友，为reject则拒绝")
+    @RequestMapping(value = "/auth_api/user/friendRequest", method = RequestMethod.POST)
+    public ResultDto handleRequest(HttpServletRequest req,
+                                   @RequestParam("type") String type,
+                                   @RequestParam("otherUsername") String otherUsername) {
+        Long uid = (Long) req.getAttribute("uid");
+        HandleRequestVo handleRequestVo = userService.handleRequest(uid, otherUsername, type);
+        return VoUtil.judge(handleRequestVo);
+    }
+
+    @ApiOperation("拉取某位用户的好友列表")
+    @RequestMapping(value = "/auth_api/user/friendList", method = RequestMethod.GET)
+    public ResultDto fetchFriendList(HttpServletRequest req) {
+        Long uid = (Long) req.getAttribute("uid");
+        FriendListVo friendListVo = userService.fetchFriendList(uid);
+        return VoUtil.judge(friendListVo);
+    }
+
     @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)
     public String chat() {
         return "hello, you can reach here";

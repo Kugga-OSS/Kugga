@@ -20,6 +20,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import javax.management.relation.Relation;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -192,28 +193,28 @@ public class UserServiceImpl implements UserService {
                 // 对方已拒绝，重新发送添加请求
                 if (otherStatus == fail) {
                     Date createTime = new Date(System.currentTimeMillis());
-                    // 更新对方状态和插入时间
+                    // 更新对方状态为等待和插入时间
                     updateUserRelationStatus(other.getUid(), ownerUid, wait, createTime);
-                    // 更新自己状态和插入时间
+                    // 更新自己状态为成功和插入时间
                     updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
                     return AddFriendResVo.builder()
                             .state(1)
                             .message("已重新发送请求，等待对方处理")
                             .build();
                 }
-                // 若对方已经同意，并且自己未同意，此时直接添加为好友
-                if (ownerStatus == wait || ownerStatus == fail) {
-                    Date createTime = new Date(System.currentTimeMillis());
-                    // 更新对方状态和插入时间
-                    updateUserRelationStatus(other.getUid(), ownerUid, success, createTime);
-                    // 更新自己状态和插入时间
-                    updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
+            }
+            // 若对方已经同意，并且自己为未处理或未同意，此时直接添加为好友
+            if (otherStatus == success && (ownerStatus == wait || ownerStatus == fail)) {
+                Date createTime = new Date(System.currentTimeMillis());
+                // 更新对方状态为成功和插入时间
+                updateUserRelationStatus(other.getUid(), ownerUid, success, createTime);
+                // 更新自己状态为成功和插入时间
+                updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
 
-                    return AddFriendResVo.builder()
-                            .state(1)
-                            .message("你们已经成功成为好友")
-                            .build();
-                }
+                return AddFriendResVo.builder()
+                        .state(1)
+                        .message("你们已经成功成为好友")
+                        .build();
             }
         }
 
@@ -315,6 +316,36 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public FriendListVo fetchFriendList(Long uid) {
+        UserRelationExample example = new UserRelationExample();
+        // 这里的逻辑是需要判断一个人是不是你的好友，那么如果你处在关系第二方，并且这段关系的状态为成功的时，
+        // 那么这段关系的拥有方一定是你的好友
+        example.createCriteria()
+                .andOtherUidEqualTo(uid)
+                .andPassEqualTo(UserRelationStatus.SUCCESS);
+        List<UserRelation> userRelations = userRelationMapper.selectByExample(example);
+        List<Long> uidList = new ArrayList<>(userRelations.size());
+        for (UserRelation relation : userRelations) {
+            uidList.add(relation.getOwnerUid());
+        }
+        List<UserVo> userVoList = new ArrayList<>();
+        List<User> userList = userExtMapper.selectAllByUid(uidList);
+        for (User user : userList) {
+            UserVo userVo = UserVo.builder()
+                    .userName(user.getUsername())
+                    .displayName(user.getDisplayName())
+                    .avatar(user.getAvatar())
+                    .email(user.getEmail())
+                    .build();
+            userVoList.add(userVo);
+        }
+        return FriendListVo.builder()
+                .state(1)
+                .friendList(userVoList)
+                .build();
+    }
+
     private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {
         UserRelation userRelation = new UserRelation();
         userRelation.setPass(status);
@@ -334,6 +365,7 @@ public class UserServiceImpl implements UserService {
      * @return
      */
     private List<UserRelationVo> generateVofromUserRelations(List<UserRelation> list, String type) {
+        if (list.size() == 0) return new ArrayList<>();
         final String owner = "owner";
         List<Long> uidList = new ArrayList<>(list.size());
         List<UserRelationVo> resList = new ArrayList<>(list.size());
