@@ -2,6 +2,7 @@ package com.ayang818.kugga.services.service;
 
 import com.ayang818.kugga.services.pojo.model.User;
 import com.ayang818.kugga.services.pojo.vo.*;
+import org.springframework.web.multipart.MultipartFile;
 
 /**
  * @author 杨丰畅
@@ -66,4 +67,6 @@ public interface UserService {
      * @param uid
      */
     FriendListVo fetchFriendList(Long uid);
+
+    UploadAvatarVo uploadAvatar(Long uid, MultipartFile avatarFile);
 }

@@ -14,13 +14,18 @@ import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
+import com.ayang818.kugga.utils.UploadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.management.relation.Relation;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -48,6 +53,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     JwtUtil jwtUtil;
+
+    @Autowired
+    UploadUtil uploadUtil;
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
@@ -346,6 +354,45 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public UploadAvatarVo uploadAvatar(Long uid, MultipartFile avatarFile) {
+        InputStream inputStream = null;
+        try {
+            inputStream = avatarFile.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 上传至OSS的avatar bucket中
+        String avatarPath = uploadUtil.upload(inputStream, "avatar");
+        if (avatarPath == null) {
+            logger.error("头像文件上传失败");
+            return UploadAvatarVo.builder()
+                    .state(2)
+                    .message("文件服务器出错")
+                    .build();
+        }
+        // 获取文件在OSS中的URL，回调
+        String avatarUrl = uploadUtil.getUrl(avatarPath, "avatar");
+        if (avatarUrl == null) {
+            logger.error("获取图片URL失败");
+            return UploadAvatarVo.builder()
+                    .state(2)
+                    .message("文件服务器出错")
+                    .build();
+        }
+
+        User user = new User();
+        user.setUid(uid);
+        user.setAvatar(avatarUrl);
+        userMapper.updateByPrimaryKeySelective(user);
+
+        return UploadAvatarVo.builder()
+                .state(1)
+                .message("更换头像成功")
+                .url(avatarUrl)
+                .build();
+    }
+
     private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {
         UserRelation userRelation = new UserRelation();
         userRelation.setPass(status);
@@ -359,10 +406,10 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @description 根据List\<UserRelation> 生成 List\<UserRelationVo>，优化了前一个使用for循环内做数据库查询的方式，改为了用in做查询
      * @param list
      * @param type
      * @return
+     * @description 根据List\<UserRelation> 生成 List\<UserRelationVo>，优化了前一个使用for循环内做数据库查询的方式，改为了用in做查询
      */
     private List<UserRelationVo> generateVofromUserRelations(List<UserRelation> list, String type) {
         if (list.size() == 0) return new ArrayList<>();
