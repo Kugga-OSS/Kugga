@@ -99,8 +99,9 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
 
         switch (msgType) {
             case MsgType.ONLINE:
-                UserConnectionMap.put(String.valueOf(msgDto.getSenderUid()), shortId);
-                ConnectionUserMap.put(shortId, String.valueOf(msgDto.getSenderUid()));
+                String uid = String.valueOf(msgDto.getSenderUid());
+                // 在网关上线
+                onlineGateway(shortId, uid);
                 // 为用户设置初始为ACK消息列表
                 context.channel().attr(NON_ACKED_MAP).set(new ConcurrentHashMap<>(16));
                 // 为用户设置私有的消息消息序号，用于作为消息接收方的ACK时候的sequence id
@@ -136,7 +137,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         // 从网关中获取该用户在线设备的连接集合
         Set<String> onlineChannelIdSet = UserConnectionMap.get(String.valueOf(uid));
         // 若由用户在线，则推送；否则等待用户上线后拉取
-        if (!onlineChannelIdSet.isEmpty() && UserConnectionMap.isOnline(uid.toString())) {
+        if (!onlineChannelIdSet.isEmpty()) {
             channels.parallelStream().forEach(channel -> {
                 if (onlineChannelIdSet.contains(channel.id().asShortText())) {
                     channel.writeAndFlush(new TextWebSocketFrame(jsonMsgVo));
@@ -181,6 +182,11 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     public void offlineGateway(String channelId, String uid) {
         ConnectionUserMap.remove(channelId);
         UserConnectionMap.remove(uid, channelId);
+    }
+
+    public void onlineGateway(String channelId, String uid) {
+        ConnectionUserMap.put(channelId, uid);
+        UserConnectionMap.put(uid, channelId);
     }
 
 }

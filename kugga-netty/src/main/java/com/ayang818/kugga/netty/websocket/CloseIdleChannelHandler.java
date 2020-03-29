@@ -34,8 +34,6 @@ public class CloseIdleChannelHandler extends ChannelDuplexHandler {
                 String shortId = ctx.channel().id().asShortText();
                 String userId = ConnectionUserMap.get(shortId);
                 if (userId != null) {
-                    ConnectionUserMap.remove(shortId);
-                    UserConnectionMap.remove(userId, shortId);
                     chatHandler.handlerRemoved(ctx);
                     logger.info("用户{} 的 {} 号channel连接不可达, 已删除相关缓存", userId, shortId);
                     logger.info(ConnectionUserMap.toStrings());

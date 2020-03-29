@@ -21,6 +21,7 @@ public class UserConnectionMap {
     public static void put(String userId, String channelShortId) {
         Set<String> channelSet = get(userId);
         channelSet.add(channelShortId);
+        MAP.put(userId, channelSet);
     }
 
     public static Set<String> get(String userId) {
@@ -31,7 +32,7 @@ public class UserConnectionMap {
     /**
      * @param userId
      * @description 某个客户端断开连接后的删除机制，若是该连接是这个用户的最后一个在线连接，
-     * 那么就从在线连接集合中删除这个用户；若不是最后一个连接，那么就从该用户的链接集合删除该连接
+     * 那么就从在线连接集合中删除这个用户；若不是最后一个连接，那么就从该用户的连接集合删除该连接
      */
     public static void remove(String userId, String channelShortId) {
         Set<String> channelIdSet = get(userId);
@@ -41,7 +42,7 @@ public class UserConnectionMap {
             MAP.put(userId, channelIdSet);
         }
         // 该用户只有1个连接了，直接从在线集合中删除这个用户
-        else {
+        else if (channelIdSet.size() == 1) {
             MAP.remove(userId);
         }
     }
