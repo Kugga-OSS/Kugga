@@ -110,6 +110,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
             case MsgType.NEWMSG:
                 // 消息持久化，并产生redis发布
                 MsgVo msgVo = msgService.sendMsg(msgDto);
+                logger.info("产生的消息视图为 {}", msgVo);
                 // 向发送方回推消息，确认服务器收到消息
                 pushMessageToUser(msgVo.getSenderUid(), JsonUtil.toJson(msgVo));
                 break;

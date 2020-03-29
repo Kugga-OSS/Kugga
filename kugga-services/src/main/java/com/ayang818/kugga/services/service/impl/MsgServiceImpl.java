@@ -3,7 +3,7 @@ package com.ayang818.kugga.services.service.impl;
 import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.model.*;
 import com.ayang818.kugga.utils.JsonUtil;
-import com.ayang818.kugga.utils.enums.MsgType;
+import com.ayang818.kugga.utils.enums.ContentType;
 import com.ayang818.kugga.services.mapper.MessageMapper;
 import com.ayang818.kugga.services.mapper.MessageRelationMapper;
 import com.ayang818.kugga.services.mapper.UserMapper;
@@ -59,7 +59,7 @@ public class MsgServiceImpl implements MsgService {
         message.setSenderId(sUid);
         message.setReceiverId(rUid);
         message.setContent(msgContent);
-        message.setMsgType(MsgType.TEXT);
+        message.setMsgType(ContentType.TEXT);
         message.setCreateTime(currentTime);
         messageMapper.insert(message);
         Long mid = message.getMid();

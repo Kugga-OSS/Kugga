@@ -38,6 +38,8 @@ public class UploadUtil {
 
     private volatile OSS ossClient;
 
+    private static final String BASE_URL = "https://kugga-storage.oss-cn-hangzhou.aliyuncs.com/";
+
     public OSS getClient() {
         if (ossClient == null) {
             synchronized (this) {
@@ -59,10 +61,7 @@ public class UploadUtil {
         return filePath;
     }
 
-    public String getUrl(String avatarPath, String avatar) {
-        // 设置url过期时间为10年
-        Date expireTime = new Date(System.currentTimeMillis() + 3600L * 1000 * 24 * 365 * 10);
-        URL url = getClient().generatePresignedUrl(bucketName, avatarPath, expireTime);
-        return url == null ? null : url.toString();
+    public String getUrl(String avatarPath, String objectType) {
+        return BASE_URL + avatarPath;
     }
 }
