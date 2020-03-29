@@ -36,8 +36,6 @@ public class CloseIdleChannelHandler extends ChannelDuplexHandler {
                 if (userId != null) {
                     chatHandler.handlerRemoved(ctx);
                     logger.info("用户{} 的 {} 号channel连接不可达, 已删除相关缓存", userId, shortId);
-                    logger.info(ConnectionUserMap.toStrings());
-                    logger.info(UserConnectionMap.toStrings());
                 }
             }
         }

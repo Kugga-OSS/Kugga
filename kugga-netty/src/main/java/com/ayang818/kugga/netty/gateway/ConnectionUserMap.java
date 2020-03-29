@@ -17,7 +17,7 @@ public class ConnectionUserMap {
     }
 
     /**
-     * @description 获取某个连接对应的用户uid
+     * @description 获取某个连接对应的用户uid，若没有则为空
      * @param channelShortId
      * @return
      */

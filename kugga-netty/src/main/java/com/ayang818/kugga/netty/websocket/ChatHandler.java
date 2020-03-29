@@ -96,7 +96,6 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         // 这条消息的目的，详情见MsgType中的几个枚举类
         int msgType = msgDto.getMsgType();
         String shortId = context.channel().id().asShortText();
-
         switch (msgType) {
             case MsgType.ONLINE:
                 String uid = String.valueOf(msgDto.getSenderUid());
@@ -169,7 +168,10 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
         super.handlerRemoved(ctx);
         String channelId = ctx.channel().id().asShortText();
         String uid = ConnectionUserMap.get(channelId);
-        offlineGateway(channelId, uid);
+        if (uid != null) {
+            offlineGateway(channelId, uid);
+            logger.info("用户 {} 已在网关下线", uid);
+        }
         channels.remove(ctx.channel());
         logger.info("{} channel已删除", channelId);
     }
