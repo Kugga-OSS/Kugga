@@ -1,6 +1,6 @@
-package com.ayang818.kugga.netty;
+package com.ayang818.kugga.netty.enums;
 
-public interface Constant {
+public interface MsgType {
     int ONLINE = 1;
     int NEWMSG = 2;
     int ACK = 3;

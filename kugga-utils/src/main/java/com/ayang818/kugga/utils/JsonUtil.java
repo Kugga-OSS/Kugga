@@ -19,7 +19,7 @@ public class JsonUtil {
         return GSON.fromJson(jsonString, klass);
     }
 
-    public static Gson getGson() {
+    public static Gson getPaser() {
         return GSON;
     }
 

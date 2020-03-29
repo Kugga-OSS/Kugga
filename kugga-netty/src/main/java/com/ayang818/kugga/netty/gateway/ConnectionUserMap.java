@@ -1,4 +1,4 @@
-package com.ayang818.kugga.netty.cache;
+package com.ayang818.kugga.netty.gateway;
 
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -10,18 +10,27 @@ import java.util.concurrent.ConcurrentHashMap;
  **/
 public class ConnectionUserMap {
 
-    private static final Map<UserConnectionMap.Connection, String> MAP = new ConcurrentHashMap<>(2000);
+    private static final Map<String, String> MAP = new ConcurrentHashMap<>(800);
 
     public static void put(String channelShortId, String userId) {
-        MAP.put(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build(), userId);
+        MAP.put(channelShortId, userId);
     }
 
+    /**
+     * @description 获取某个连接对应的用户uid
+     * @param channelShortId
+     * @return
+     */
     public static String get(String channelShortId) {
-        return MAP.get(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build());
+        return MAP.get(channelShortId);
     }
 
+    /**
+     * @description 删除某个连接后对应的动作
+     * @param channelShortId
+     */
     public static void remove(String channelShortId) {
-        MAP.remove(UserConnectionMap.Connection.builder().channelShortId(channelShortId).build());
+        MAP.remove(channelShortId);
     }
 
     public static String toStrings() {

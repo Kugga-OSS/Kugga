@@ -5,7 +5,7 @@ package com.ayang818.kugga.utils.enums;
  * @description TODO
  * @date 2020/1/31 13:34
  **/
-public interface RedisConstants {
+public interface RedisKeyPartConstants {
     String PERSONAL_UNREAD="_Person";
     String TOTAL_UNRAED="_Total";
     String WBE_SOCKET_TOPIC="websocket:msg";

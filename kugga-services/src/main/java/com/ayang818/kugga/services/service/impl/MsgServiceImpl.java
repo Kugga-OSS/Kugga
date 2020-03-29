@@ -10,7 +10,7 @@ import com.ayang818.kugga.services.mapper.UserMapper;
 import com.ayang818.kugga.services.mapper.UserRelationMapper;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
-import com.ayang818.kugga.utils.enums.RedisConstants;
+import com.ayang818.kugga.utils.enums.RedisKeyPartConstants;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -50,7 +50,7 @@ public class MsgServiceImpl implements MsgService {
         Long sUid = msgDto.getSenderUid();
         Long rUid = msgDto.getReceiverUid();
         // 暂时全部为文本
-        Integer msgType = msgDto.getContentType();
+        Integer contentType = msgDto.getContentType();
         String msgContent = msgDto.getContent();
         Date currentTime = new Date(System.currentTimeMillis());
 
@@ -103,10 +103,12 @@ public class MsgServiceImpl implements MsgService {
         }
 
         /* 更新未读消息*/
-        String totalKey = rUid.toString() + RedisConstants.TOTAL_UNRAED;
-        String personalKey = rUid.toString() + RedisConstants.PERSONAL_UNREAD;
+        String totalKey = rUid.toString() + RedisKeyPartConstants.TOTAL_UNRAED;
+        String personalKey = rUid.toString() + RedisKeyPartConstants.PERSONAL_UNREAD;
+        // 变更总未读消息
         redisTemplate.opsForValue().increment(totalKey, 1);
         // logger.info("总未读消息变更为{}", redisTemplate.opsForValue().get(totalKey));
+        // 变更会话未读消息
         redisTemplate.opsForHash().increment(personalKey, sUid.toString(), 1);
         // logger.info("与用户{}未读消息变更为{}", sUid.toString(), redisTemplate.opsForHash().get(personalKey, sUid.toString()));
 
@@ -120,11 +122,11 @@ public class MsgServiceImpl implements MsgService {
                 .senderUid(sUid)
                 .receiverUid(rUid)
                 .createTime(currentTime)
-                .type(msgType)
+                .type(contentType)
                 .build();
 
         /* 将消息发布到Redis中 */
-        redisTemplate.convertAndSend(RedisConstants.WBE_SOCKET_TOPIC, JsonUtil.toJson(msgVo));
+        redisTemplate.convertAndSend(RedisKeyPartConstants.WBE_SOCKET_TOPIC, JsonUtil.toJson(msgVo));
 
         return msgVo;
     }

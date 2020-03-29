@@ -15,5 +15,6 @@ public class UserVo implements Vo {
     String userName;
     String displayName;
     String avatar;
+    Long uid;
     String email;
 }

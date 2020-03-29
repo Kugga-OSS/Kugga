@@ -1,7 +1,7 @@
 package com.ayang818.kugga.netty.websocket;
 
-import com.ayang818.kugga.netty.cache.ConnectionUserMap;
-import com.ayang818.kugga.netty.cache.UserConnectionMap;
+import com.ayang818.kugga.netty.gateway.ConnectionUserMap;
+import com.ayang818.kugga.netty.gateway.UserConnectionMap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;

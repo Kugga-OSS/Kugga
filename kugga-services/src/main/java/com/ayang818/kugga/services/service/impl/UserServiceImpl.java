@@ -114,6 +114,7 @@ public class UserServiceImpl implements UserService {
                 .displayName(user.getDisplayName())
                 .email(user.getEmail())
                 .userName(user.getUsername())
+                .uid(user.getUid())
                 .build();
     }
 
@@ -130,6 +131,7 @@ public class UserServiceImpl implements UserService {
                     .displayName(user.getDisplayName())
                     .avatar(user.getAvatar())
                     .email(user.getEmail())
+                    .uid(user.getUid())
                     .build();
             resList.add(userVo);
         }
@@ -345,6 +347,7 @@ public class UserServiceImpl implements UserService {
                     .displayName(user.getDisplayName())
                     .avatar(user.getAvatar())
                     .email(user.getEmail())
+                    .uid(user.getUid())
                     .build();
             userVoList.add(userVo);
         }
@@ -436,6 +439,7 @@ public class UserServiceImpl implements UserService {
                             .avatar(tmp.getAvatar())
                             .displayName(tmp.getDisplayName())
                             .email(tmp.getEmail())
+                            .uid(tmp.getUid())
                             .build();
                     UserRelationVo userRelationVo = UserRelationVo.builder()
                             .other(userVo)

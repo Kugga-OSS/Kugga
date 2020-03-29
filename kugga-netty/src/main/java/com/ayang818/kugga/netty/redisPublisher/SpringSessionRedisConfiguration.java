@@ -1,6 +1,6 @@
 package com.ayang818.kugga.netty.redisPublisher;
 
-import com.ayang818.kugga.utils.enums.RedisConstants;
+import com.ayang818.kugga.utils.enums.RedisKeyPartConstants;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -66,7 +66,7 @@ public class SpringSessionRedisConfiguration {
         final RedisMessageListenerContainer container = new RedisMessageListenerContainer();
 
         container.setConnectionFactory(jedisConnectionFactory());
-        container.addMessageListener(new MessageListenerAdapter(newMessageListener), new ChannelTopic(RedisConstants.WBE_SOCKET_TOPIC));
+        container.addMessageListener(new MessageListenerAdapter(newMessageListener), new ChannelTopic(RedisKeyPartConstants.WBE_SOCKET_TOPIC));
 
         return container;
     }

@@ -1,15 +1,17 @@
 package com.ayang818.kugga.netty.websocket;
 
-import com.ayang818.kugga.netty.Constant;
-import com.ayang818.kugga.netty.cache.ConnectionUserMap;
-import com.ayang818.kugga.netty.cache.UserConnectionMap;
+import com.ayang818.kugga.netty.enums.MsgType;
+import com.ayang818.kugga.netty.gateway.ConnectionUserMap;
+import com.ayang818.kugga.netty.gateway.UserConnectionMap;
 import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
 import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.JsonUtil;
+import com.google.gson.Gson;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
+import io.netty.channel.ChannelId;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -87,30 +89,34 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     @Override
     protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
+        // 此处 logger 需要在生产环境中删除
+        logger.info("收到消息 {}", content);
+        Gson paser = JsonUtil.getPaser();
         MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
+        // 这条消息的目的，详情见MsgType中的几个枚举类
         int msgType = msgDto.getMsgType();
         String shortId = context.channel().id().asShortText();
 
         switch (msgType) {
-            case Constant.ONLINE:
+            case MsgType.ONLINE:
                 UserConnectionMap.put(String.valueOf(msgDto.getSenderUid()), shortId);
                 ConnectionUserMap.put(shortId, String.valueOf(msgDto.getSenderUid()));
-                // 为用户设置初始消息列表
+                // 为用户设置初始为ACK消息列表
                 context.channel().attr(NON_ACKED_MAP).set(new ConcurrentHashMap<>(16));
-                // 为用户设置私有的消息消息序号
+                // 为用户设置私有的消息消息序号，用于作为消息接收方的ACK时候的sequence id
                 context.channel().attr(SID_GENERATOR).set(new AtomicLong(0));
-                logger.info("用户 {} 已注册到双向映射表, 已经上线", msgDto.getSenderUid());
+                logger.info("用户 {} 已在网关上线", msgDto.getSenderUid());
                 break;
-            case Constant.NEWMSG:
+            case MsgType.NEWMSG:
                 // 消息持久化，并产生redis发布
                 MsgVo msgVo = msgService.sendMsg(msgDto);
-                // 回推消息，确认服务器收到消息
+                // 向发送方回推消息，确认服务器收到消息
                 pushMessageToUser(msgVo.getSenderUid(), JsonUtil.toJson(msgVo));
                 break;
-            case Constant.ACK:
-
+            case MsgType.ACK:
+                // 对某条消息序号进行ACK，若一段时间没有收到，则对消息进行重发
                 break;
-            case Constant.HEARTBEAT:
+            case MsgType.HEARTBEAT:
                 logger.info("收到心跳包");
                 context.channel().writeAndFlush(new TextWebSocketFrame("ping:pong"));
                 break;
@@ -121,17 +127,17 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     }
 
     /**
-     * @description 推送消息, 这是个无状态的动作, 所以我选择使用static方法修饰
-     * @param uid
+     * @description 推送消息, 这是个无状态的动作, 所以选择使用static方法修饰
+     * @param uid 推送消息目的用户的uid
      * @param jsonMsgVo
      */
     public static void pushMessageToUser(Long uid, String jsonMsgVo) {
-        Set<UserConnectionMap.Connection> connections = UserConnectionMap.get(String.valueOf(uid));
-        if (connections != null && !connections.isEmpty()) {
-            Set<String> channelShortIdSet = new HashSet<>();
-            connections.forEach(connection -> channelShortIdSet.add(connection.getChannelShortId()));
-            channels.forEach(channel -> {
-                if (channelShortIdSet.contains(channel.id().asShortText())) {
+        // 从网关中获取该用户在线设备的连接集合
+        Set<String> onlineChannelIdSet = UserConnectionMap.get(String.valueOf(uid));
+        // 若由用户在线，则推送；否则等待用户上线后拉取
+        if (!onlineChannelIdSet.isEmpty() && UserConnectionMap.isOnline(uid.toString())) {
+            channels.parallelStream().forEach(channel -> {
+                if (onlineChannelIdSet.contains(channel.id().asShortText())) {
                     channel.writeAndFlush(new TextWebSocketFrame(jsonMsgVo));
                 }
             });
@@ -159,8 +165,21 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         super.handlerRemoved(ctx);
+        String channelId = ctx.channel().id().asShortText();
+        String uid = ConnectionUserMap.get(channelId);
+        offlineGateway(channelId, uid);
         channels.remove(ctx.channel());
-        logger.info("{} channel已删除", ctx.channel().id().asShortText());
+        logger.info("{} channel已删除", channelId);
+    }
+
+    /**
+     * @description 将用户从网关中下线
+     * @param channelId
+     * @param uid
+     */
+    public void offlineGateway(String channelId, String uid) {
+        ConnectionUserMap.remove(channelId);
+        UserConnectionMap.remove(uid, channelId);
     }
 
 }
