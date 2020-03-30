@@ -192,7 +192,7 @@ public class UserServiceImpl implements UserService {
                 // 双方已经是好友了
                 if (otherStatus == success) {
                     return AddFriendResVo.builder()
-                            .state(1)
+                            .state(2)
                             .message("你们已经是好友啦")
                             .build();
                 }

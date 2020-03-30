@@ -73,6 +73,12 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
      */
     private static final AttributeKey<AtomicLong> SID_GENERATOR = AttributeKey.newInstance("sid-generator");
 
+    private static final String HEART_BEAT_RESP = "{\"msgType\": \"" + MsgType.HEARTBEAT +
+            "\", \"data\": \"pong\"}";
+
+    private static final String FRIEND_REQ_RESP = "{\"msgType\": \"" + MsgType.FRIEND_REQUEST +
+            "\", \"data\": \"你收到了一条新的好友请求，请注意查收\"}";
+
     private static final Logger logger = LoggerFactory.getLogger(ChatHandler.class);
 
     @Override
@@ -108,8 +114,10 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
                 // 对某条消息序号进行ACK，若一段时间没有收到，则对消息进行重发
                 break;
             case MsgType.HEARTBEAT:
-                logger.info("收到心跳包");
-                context.channel().writeAndFlush(new TextWebSocketFrame("ping:pong"));
+                context.channel().writeAndFlush(new TextWebSocketFrame(HEART_BEAT_RESP));
+                break;
+            case MsgType.FRIEND_REQUEST:
+                pushFriendRequestNotifyToUser(msgDto.getContent());
                 break;
             default:
                 break;
@@ -118,18 +126,35 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     }
 
     /**
-     * @param uid       推送消息目的用户的uid
+     * @param uid 推送聊天消息到目的用户
      * @param jsonMsgVo
      * @description 推送消息, 这是个无状态的动作, 所以选择使用static方法修饰
      */
     public static void pushMessageToUser(Long uid, String jsonMsgVo) {
         // 从网关中获取该用户在线设备的连接集合
         Set<String> onlineChannelIdSet = Gateway.getChannelIdSet(uid.toString());
-        // 若由用户在线，则推送；否则等待用户上线后拉取
-        if (!onlineChannelIdSet.isEmpty()) {
+        push(onlineChannelIdSet, jsonMsgVo);
+    }
+
+    /**
+     * @description 推送好友请求到目的用户
+     * @param uid
+     */
+    public static void pushFriendRequestNotifyToUser(String uid) {
+        Set<String> onlineChannelIdSet = Gateway.getChannelIdSet(uid);
+        push(onlineChannelIdSet, FRIEND_REQ_RESP);
+    }
+
+    /**
+     * @description 公共推送（若用户在线，则推送；否则等待用户上线后主动拉取）
+     * @param onlineSet
+     * @param msg
+     */
+    private static void push(Set<String> onlineSet, String msg) {
+        if (!onlineSet.isEmpty()) {
             channels.parallelStream().forEach(channel -> {
-                if (onlineChannelIdSet.contains(channel.id().asShortText())) {
-                    channel.writeAndFlush(new TextWebSocketFrame(jsonMsgVo));
+                if (onlineSet.contains(channel.id().asShortText())) {
+                    channel.writeAndFlush(new TextWebSocketFrame(msg));
                 }
             });
         }
