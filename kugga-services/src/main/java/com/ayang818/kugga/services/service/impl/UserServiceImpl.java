@@ -90,10 +90,13 @@ public class UserServiceImpl implements UserService {
             User user = users.get(0);
             // 将传入的密码加盐后比较存在数据库中已经加密的密码
             if (EncryptUtil.compare(password, user.getSalt(), user.getPassword())) {
-                // generate json web token, jwt`s payload include UID, and set expired time as 7 days
-                String jwt = jwtUtil.createJWT("kugga", JsonUtil.toJson(new JwtSubject(user.getUid())), DEFAULT_EXPIRED_TIME);
+                // generate json web token, jwt`s payload include UID, and set expired time as 7
+                //days
+                String jwt = jwtUtil.createJWT("kugga",
+                        JsonUtil.toJson(new JwtSubject(user.getUid())), DEFAULT_EXPIRED_TIME);
                 // set redis cache expired time as 7 days
-                stringRedisTemplate.opsForValue().set(jwt, String.valueOf(user.getUid()), DEFAULT_EXPIRED_TIME, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set(jwt, String.valueOf(user.getUid()),
+                        DEFAULT_EXPIRED_TIME, TimeUnit.SECONDS);
                 return LoginVo.builder().message("登陆成功").jwt(jwt).state(1).build();
             } else {
                 return LoginVo.builder().message("密码错误").state(0).build();

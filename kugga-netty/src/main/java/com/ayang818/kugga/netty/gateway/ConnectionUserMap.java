@@ -12,7 +12,7 @@ public class ConnectionUserMap {
 
     private static final Map<String, String> MAP = new ConcurrentHashMap<>(800);
 
-    public static void put(String channelShortId, String userId) {
+    protected static void put(String channelShortId, String userId) {
         MAP.put(channelShortId, userId);
     }
 
@@ -21,7 +21,7 @@ public class ConnectionUserMap {
      * @param channelShortId
      * @return
      */
-    public static String get(String channelShortId) {
+    protected static String get(String channelShortId) {
         return MAP.get(channelShortId);
     }
 
@@ -29,11 +29,11 @@ public class ConnectionUserMap {
      * @description 删除某个连接后对应的动作
      * @param channelShortId
      */
-    public static void remove(String channelShortId) {
+    protected static void remove(String channelShortId) {
         MAP.remove(channelShortId);
     }
 
-    public static String toStrings() {
+    protected static String toStrings() {
         return MAP.toString();
     }
 

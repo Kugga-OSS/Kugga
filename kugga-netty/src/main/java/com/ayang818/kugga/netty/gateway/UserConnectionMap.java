@@ -18,13 +18,13 @@ public class UserConnectionMap {
     private static final Map<String, Set<String>> MAP = new ConcurrentHashMap<>(800);
 
 
-    public static void put(String userId, String channelShortId) {
+    protected static void put(String userId, String channelShortId) {
         Set<String> channelSet = get(userId);
         channelSet.add(channelShortId);
         MAP.put(userId, channelSet);
     }
 
-    public static Set<String> get(String userId) {
+    protected static Set<String> get(String userId) {
         Set<String> channelSet = MAP.get(userId);
         return channelSet == null ? new HashSet<>() : channelSet;
     }
@@ -34,7 +34,7 @@ public class UserConnectionMap {
      * @description 某个客户端断开连接后的删除机制，若是该连接是这个用户的最后一个在线连接，
      * 那么就从在线连接集合中删除这个用户；若不是最后一个连接，那么就从该用户的连接集合删除该连接
      */
-    public static void remove(String userId, String channelShortId) {
+    protected static void remove(String userId, String channelShortId) {
         Set<String> channelIdSet = get(userId);
         // 该用户不止一个连接登录
         if (channelIdSet.size() > 1) {
@@ -51,11 +51,11 @@ public class UserConnectionMap {
      * @param userId
      * @return 检查某个用户是否在线
      */
-    public static Boolean isOnline(String userId) {
+    protected static Boolean isOnline(String userId) {
         return MAP.containsKey(userId);
     }
 
-    public static String toStrings() {
+    protected static String toStrings() {
         return MAP.toString();
     }
 }

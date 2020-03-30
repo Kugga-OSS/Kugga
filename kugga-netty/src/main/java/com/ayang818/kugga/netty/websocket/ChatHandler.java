@@ -1,8 +1,7 @@
 package com.ayang818.kugga.netty.websocket;
 
 import com.ayang818.kugga.netty.enums.MsgType;
-import com.ayang818.kugga.netty.gateway.ConnectionUserMap;
-import com.ayang818.kugga.netty.gateway.UserConnectionMap;
+import com.ayang818.kugga.netty.gateway.Gateway;
 import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
@@ -11,7 +10,6 @@ import com.ayang818.kugga.utils.JsonUtil;
 import com.google.gson.Gson;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
-import io.netty.channel.ChannelId;
 import io.netty.channel.SimpleChannelInboundHandler;
 import io.netty.channel.group.ChannelGroup;
 import io.netty.channel.group.DefaultChannelGroup;
@@ -23,40 +21,30 @@ import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 
-import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicLong;
 
 /**
- *                               ——————————————————————————
- *                               已经登录，每次进入主界面，且上
- *                              一个连接过期了，重新创建channel。
- *                               ——————————————————————————
- *                                          |
- *                                          |
- *                                          V
- *                               ———————————————————————————
- *                               创建维护用户Id与ChannelShortId
- *                               的ConcurrentHashMap映射。用于
- *                               在线用户的信息维护。
- *                               ————————————————————————————
- *                                          |
- *                                          |
- *                                          V
- *                               ————————————————————————————
- *                               每次Handler收到传入的信息时(
- *                                  传入的信息有几种类别
- *                                  1. 消息
- *                                  2. 心跳包
- *                                  3. 新的Channel连接
- *                               )
- *                               根据消息类别的不同做出不同的行为。
- *                               1. 若是消息，进行消息的存储
- *                               2. 若是新的Channel连接，拉取对应用户的未读消息。
- *                               3. 若是心跳包，不在该Handler做处理。
- *                               ————————————————————————————
- *
+ * ——————————————————————————
+ * 已经登录，每次进入主界面，且上
+ * 一个连接过期了，重新创建channel。
+ * ——————————————————————————
+ * |
+ * |
+ * V
+ * ———————————————————————————
+ * 在网关上维护在线用户连接
+ * ————————————————————————————
+ * |
+ * |
+ * V
+ * ————————————————————————————
+ * 每次Handler收到传入的信息时(
+ * 传入的信息有几种类别均在enums.MsgType类中
+ * )
+ * 根据消息类别的不同做出不同的行为。
+ * ————————————————————————————
  *
  * @author 杨丰畅
  * @description TODO
@@ -77,7 +65,8 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     /**
      * 未收到ACK的列表
      */
-    private static final AttributeKey<ConcurrentHashMap<Long, String>> NON_ACKED_MAP = AttributeKey.newInstance("non_acked_map");
+    private static final AttributeKey<ConcurrentHashMap<Long, String>> NON_ACKED_MAP =
+            AttributeKey.newInstance("non_acked_map");
 
     /**
      * 消息序列生成器  sequence-id-generator
@@ -87,10 +76,11 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     private static final Logger logger = LoggerFactory.getLogger(ChatHandler.class);
 
     @Override
-    protected void channelRead0(ChannelHandlerContext context, TextWebSocketFrame textWebSocketFrame) throws Exception {
+    protected void channelRead0(ChannelHandlerContext context,
+                                TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
         // 此处 logger 需要在生产环境中删除
-        logger.info("收到消息 {}", content);
+        logger.info("收到 {} channel的消息 {}", context.channel().id().asShortText(), content);
         Gson paser = JsonUtil.getPaser();
         MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
         // 这条消息的目的，详情见MsgType中的几个枚举类
@@ -100,7 +90,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
             case MsgType.ONLINE:
                 String uid = String.valueOf(msgDto.getSenderUid());
                 // 在网关上线
-                onlineGateway(shortId, uid);
+                Gateway.onlineGateway(shortId, uid);
                 // 为用户设置初始为ACK消息列表
                 context.channel().attr(NON_ACKED_MAP).set(new ConcurrentHashMap<>(16));
                 // 为用户设置私有的消息消息序号，用于作为消息接收方的ACK时候的sequence id
@@ -128,13 +118,13 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     }
 
     /**
-     * @description 推送消息, 这是个无状态的动作, 所以选择使用static方法修饰
-     * @param uid 推送消息目的用户的uid
+     * @param uid       推送消息目的用户的uid
      * @param jsonMsgVo
+     * @description 推送消息, 这是个无状态的动作, 所以选择使用static方法修饰
      */
     public static void pushMessageToUser(Long uid, String jsonMsgVo) {
         // 从网关中获取该用户在线设备的连接集合
-        Set<String> onlineChannelIdSet = UserConnectionMap.get(String.valueOf(uid));
+        Set<String> onlineChannelIdSet = Gateway.getChannelIdSet(uid.toString());
         // 若由用户在线，则推送；否则等待用户上线后拉取
         if (!onlineChannelIdSet.isEmpty()) {
             channels.parallelStream().forEach(channel -> {
@@ -147,8 +137,8 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
 
     /**
      * @param ctx
-     * @description Handler 生命周期中的一部分，当Handler被加到某个pipeline时执行的动作
      * @throws Exception
+     * @description Handler 生命周期中的一部分，当Handler被加到某个pipeline时执行的动作
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
@@ -160,35 +150,16 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
 
     /**
      * @param ctx
-     * @description Handler生命周期的一部分，当Handler从某个pipeline删除时执行的动作
      * @throws Exception
+     * @description Handler生命周期的一部分，当Handler从某个pipeline删除时执行的动作
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
         super.handlerRemoved(ctx);
         String channelId = ctx.channel().id().asShortText();
-        String uid = ConnectionUserMap.get(channelId);
-        if (uid != null) {
-            offlineGateway(channelId, uid);
-            logger.info("用户 {} 已在网关下线", uid);
+        if (channels.remove(ctx.channel())) {
+            logger.info("{} channel已删除", channelId);
         }
-        channels.remove(ctx.channel());
-        logger.info("{} channel已删除", channelId);
-    }
-
-    /**
-     * @description 将用户从网关中下线
-     * @param channelId
-     * @param uid
-     */
-    public void offlineGateway(String channelId, String uid) {
-        ConnectionUserMap.remove(channelId);
-        UserConnectionMap.remove(uid, channelId);
-    }
-
-    public void onlineGateway(String channelId, String uid) {
-        ConnectionUserMap.put(channelId, uid);
-        UserConnectionMap.put(uid, channelId);
     }
 
 }
