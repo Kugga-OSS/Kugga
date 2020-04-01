@@ -44,7 +44,8 @@ public class WebSocketInitializer extends ChannelInitializer<SocketChannel> {
         pipeline.addLast(chatHandler);
 
         // =========== 用于心跳检测 =============
-        pipeline.addLast(new IdleStateHandler(0, 0, 300));
+        // 由于有前端有15s一次的心跳检测。所以后端可以适当调小——60s无读写，即判断连接死亡
+        pipeline.addLast(new IdleStateHandler(0, 0, 60));
         pipeline.addLast(idleChannelHandler);
     }
 

@@ -9,10 +9,8 @@ import com.ayang818.kugga.utils.EncryptUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RequestMethod;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -81,6 +79,40 @@ public class UserController {
         Long uid = (Long) req.getAttribute("uid");
         AddFriendResVo addFriendResVo = userService.addNewFriend(uid, username);
         return VoUtil.judge(addFriendResVo);
+    }
+
+    @ApiOperation("拉取某个用户收到/发出的好友请求，其中type参数为枚举字符串，若为owner则拉取自己发出的请求，为other则拉取自己收到的请求")
+    @RequestMapping(value = "/auth_api/user/friendRequest", method = RequestMethod.GET)
+    public ResultDto pullRequest(HttpServletRequest req, @RequestParam("type") String type) {
+        Long uid = (Long) req.getAttribute("uid");
+        PullFriendRequestVo pullFriendRequestVo = userService.pullFriendRequest(uid, type);
+        return VoUtil.judge(pullFriendRequestVo);
+    }
+
+    @ApiOperation("处理自己收到的请求，其中type参数为枚举字符串，若为agree则同意加为好友，为reject则拒绝")
+    @RequestMapping(value = "/auth_api/user/friendRequest", method = RequestMethod.POST)
+    public ResultDto handleRequest(HttpServletRequest req,
+                                   @RequestParam("type") String type,
+                                   @RequestParam("otherUsername") String otherUsername) {
+        Long uid = (Long) req.getAttribute("uid");
+        HandleRequestVo handleRequestVo = userService.handleRequest(uid, otherUsername, type);
+        return VoUtil.judge(handleRequestVo);
+    }
+
+    @ApiOperation("拉取某位用户的好友列表")
+    @RequestMapping(value = "/auth_api/user/friendList", method = RequestMethod.GET)
+    public ResultDto fetchFriendList(HttpServletRequest req) {
+        Long uid = (Long) req.getAttribute("uid");
+        FriendListVo friendListVo = userService.fetchFriendList(uid);
+        return VoUtil.judge(friendListVo);
+    }
+
+    @ApiOperation("用户上传头像")
+    @RequestMapping(value = "/auth_api/user/avatar", method = RequestMethod.POST)
+    public ResultDto uploadAvatar(HttpServletRequest req, @RequestParam("file") MultipartFile file) {
+        Long uid = (Long) req.getAttribute("uid");
+        UploadAvatarVo uploadAvatarVo = userService.uploadAvatar(uid, file);
+        return VoUtil.judge(uploadAvatarVo);
     }
 
     @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)

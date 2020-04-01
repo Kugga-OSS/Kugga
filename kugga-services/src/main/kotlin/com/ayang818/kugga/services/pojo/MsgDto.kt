@@ -11,6 +11,6 @@ data class MsgDto(var senderUid : Long,
                    */
                   var contentType : Int,
                   /**
-                   * 消息类型 : ACK、发送新消息、心跳包、注册连接等
+                   * 消息类型 : ACK、发送新消息、心跳包、注册连接等,
                    */
                   var msgType : Int)

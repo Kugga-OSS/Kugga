@@ -66,8 +66,9 @@ public class TokenInterceptor implements HandlerInterceptor {
                 String jsonString = claims.getSubject();
                 JwtSubject jwtSubject = JsonUtil.fromJson(jsonString, JwtSubject.class);
                 if (jwtSubject != null) {
-                    logger.info("用户 {} 的 jwt 未击中缓存，重新设置缓存", uid);
-                    redisTemplate.opsForValue().set(token, uid, expireDate.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
+                    logger.info("用户 {} 的 jwt 未击中缓存，重新设置缓存", jwtSubject.getUID());
+                    redisTemplate.opsForValue().set(token, String.valueOf(jwtSubject.getUID()),
+                            expireDate.getTime() - System.currentTimeMillis(), TimeUnit.MILLISECONDS);
                     request.setAttribute("uid", jwtSubject.getUID());
                     return true;
                 }

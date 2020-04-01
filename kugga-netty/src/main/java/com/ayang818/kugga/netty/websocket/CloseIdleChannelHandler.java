@@ -1,7 +1,6 @@
 package com.ayang818.kugga.netty.websocket;
 
-import com.ayang818.kugga.netty.cache.ConnectionUserMap;
-import com.ayang818.kugga.netty.cache.UserConnectionMap;
+import com.ayang818.kugga.netty.gateway.Gateway;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -31,16 +30,7 @@ public class CloseIdleChannelHandler extends ChannelDuplexHandler {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.ALL_IDLE) {
-                String shortId = ctx.channel().id().asShortText();
-                String userId = ConnectionUserMap.get(shortId);
-                if (userId != null) {
-                    ConnectionUserMap.remove(shortId);
-                    UserConnectionMap.remove(userId, shortId);
-                    chatHandler.handlerRemoved(ctx);
-                    logger.info("用户{} 的 {} 号channel连接不可达, 已删除相关缓存", userId, shortId);
-                    logger.info(ConnectionUserMap.toStrings());
-                    logger.info(UserConnectionMap.toStrings());
-                }
+                chatHandler.handlerRemoved(ctx);
             }
         }
     }

@@ -38,7 +38,7 @@ public class WebSocketServer {
 
         try {
             this.future = server.bind(PORT).sync();
-            logger.info("WebSocket 启动, 运行在 ws://localhost:{}", PORT);
+            logger.info("WebSocket 启动, 运行在 ws://localhost:{}/ws", PORT);
         } catch (InterruptedException e) {
             e.printStackTrace();
             logger.info("WebSocket 启动失败");

@@ -14,12 +14,18 @@ import com.ayang818.kugga.services.service.UserService;
 import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
+import com.ayang818.kugga.utils.UploadUtil;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
+import org.springframework.web.multipart.MultipartFile;
 
+import javax.management.relation.Relation;
+import java.io.FileInputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -47,6 +53,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     JwtUtil jwtUtil;
+
+    @Autowired
+    UploadUtil uploadUtil;
 
     @Autowired
     StringRedisTemplate stringRedisTemplate;
@@ -81,10 +90,13 @@ public class UserServiceImpl implements UserService {
             User user = users.get(0);
             // 将传入的密码加盐后比较存在数据库中已经加密的密码
             if (EncryptUtil.compare(password, user.getSalt(), user.getPassword())) {
-                // generate json web token, jwt`s payload include UID, and set expired time as 7 days
-                String jwt = jwtUtil.createJWT("kugga", JsonUtil.toJson(new JwtSubject(user.getUid())), DEFAULT_EXPIRED_TIME);
+                // generate json web token, jwt`s payload include UID, and set expired time as 7
+                //days
+                String jwt = jwtUtil.createJWT("kugga",
+                        JsonUtil.toJson(new JwtSubject(user.getUid())), DEFAULT_EXPIRED_TIME);
                 // set redis cache expired time as 7 days
-                stringRedisTemplate.opsForValue().set(jwt, String.valueOf(user.getUid()), DEFAULT_EXPIRED_TIME, TimeUnit.SECONDS);
+                stringRedisTemplate.opsForValue().set(jwt, String.valueOf(user.getUid()),
+                        DEFAULT_EXPIRED_TIME, TimeUnit.SECONDS);
                 return LoginVo.builder().message("登陆成功").jwt(jwt).state(1).build();
             } else {
                 return LoginVo.builder().message("密码错误").state(0).build();
@@ -105,6 +117,7 @@ public class UserServiceImpl implements UserService {
                 .displayName(user.getDisplayName())
                 .email(user.getEmail())
                 .userName(user.getUsername())
+                .uid(user.getUid())
                 .build();
     }
 
@@ -121,6 +134,7 @@ public class UserServiceImpl implements UserService {
                     .displayName(user.getDisplayName())
                     .avatar(user.getAvatar())
                     .email(user.getEmail())
+                    .uid(user.getUid())
                     .build();
             resList.add(userVo);
         }
@@ -178,7 +192,7 @@ public class UserServiceImpl implements UserService {
                 // 双方已经是好友了
                 if (otherStatus == success) {
                     return AddFriendResVo.builder()
-                            .state(1)
+                            .state(2)
                             .message("你们已经是好友啦")
                             .build();
                 }
@@ -192,28 +206,28 @@ public class UserServiceImpl implements UserService {
                 // 对方已拒绝，重新发送添加请求
                 if (otherStatus == fail) {
                     Date createTime = new Date(System.currentTimeMillis());
-                    // 更新对方状态和插入时间
+                    // 更新对方状态为等待和插入时间
                     updateUserRelationStatus(other.getUid(), ownerUid, wait, createTime);
-                    // 更新自己状态和插入时间
+                    // 更新自己状态为成功和插入时间
                     updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
                     return AddFriendResVo.builder()
                             .state(1)
                             .message("已重新发送请求，等待对方处理")
                             .build();
                 }
-                // 若对方已经同意，并且自己未同意，此时直接添加为好友
-                if (ownerStatus == wait || ownerStatus == fail) {
-                    Date createTime = new Date(System.currentTimeMillis());
-                    // 更新对方状态和插入时间
-                    updateUserRelationStatus(other.getUid(), ownerUid, success, createTime);
-                    // 更新自己状态和插入时间
-                    updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
+            }
+            // 若对方已经同意，并且自己为未处理或未同意，此时直接添加为好友
+            if (otherStatus == success && (ownerStatus == wait || ownerStatus == fail)) {
+                Date createTime = new Date(System.currentTimeMillis());
+                // 更新对方状态为成功和插入时间
+                updateUserRelationStatus(other.getUid(), ownerUid, success, createTime);
+                // 更新自己状态为成功和插入时间
+                updateUserRelationStatus(ownerUid, other.getUid(), success, createTime);
 
-                    return AddFriendResVo.builder()
-                            .state(1)
-                            .message("你们已经成功成为好友")
-                            .build();
-                }
+                return AddFriendResVo.builder()
+                        .state(1)
+                        .message("你们已经成功成为好友")
+                        .build();
             }
         }
 
@@ -315,6 +329,76 @@ public class UserServiceImpl implements UserService {
                 .build();
     }
 
+    @Override
+    public FriendListVo fetchFriendList(Long uid) {
+        UserRelationExample example = new UserRelationExample();
+        // 这里的逻辑是需要判断一个人是不是你的好友，那么如果你处在关系第二方，并且这段关系的状态为成功的时，
+        // 那么这段关系的拥有方一定是你的好友
+        example.createCriteria()
+                .andOtherUidEqualTo(uid)
+                .andPassEqualTo(UserRelationStatus.SUCCESS);
+        List<UserRelation> userRelations = userRelationMapper.selectByExample(example);
+        List<Long> uidList = new ArrayList<>(userRelations.size());
+        for (UserRelation relation : userRelations) {
+            uidList.add(relation.getOwnerUid());
+        }
+        List<UserVo> userVoList = new ArrayList<>();
+        List<User> userList = userExtMapper.selectAllByUid(uidList);
+        for (User user : userList) {
+            UserVo userVo = UserVo.builder()
+                    .userName(user.getUsername())
+                    .displayName(user.getDisplayName())
+                    .avatar(user.getAvatar())
+                    .email(user.getEmail())
+                    .uid(user.getUid())
+                    .build();
+            userVoList.add(userVo);
+        }
+        return FriendListVo.builder()
+                .state(1)
+                .friendList(userVoList)
+                .build();
+    }
+
+    @Override
+    public UploadAvatarVo uploadAvatar(Long uid, MultipartFile avatarFile) {
+        InputStream inputStream = null;
+        try {
+            inputStream = avatarFile.getInputStream();
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        // 上传至OSS的avatar bucket中
+        String avatarPath = uploadUtil.upload(inputStream, "avatar");
+        if (avatarPath == null) {
+            logger.error("头像文件上传失败");
+            return UploadAvatarVo.builder()
+                    .state(2)
+                    .message("文件服务器出错")
+                    .build();
+        }
+        // 获取文件在OSS中的URL，回调
+        String avatarUrl = uploadUtil.getUrl(avatarPath, "avatar");
+        if (avatarUrl == null) {
+            logger.error("获取图片URL失败");
+            return UploadAvatarVo.builder()
+                    .state(2)
+                    .message("文件服务器出错")
+                    .build();
+        }
+
+        User user = new User();
+        user.setUid(uid);
+        user.setAvatar(avatarUrl);
+        userMapper.updateByPrimaryKeySelective(user);
+
+        return UploadAvatarVo.builder()
+                .state(1)
+                .message("更换头像成功")
+                .url(avatarUrl)
+                .build();
+    }
+
     private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {
         UserRelation userRelation = new UserRelation();
         userRelation.setPass(status);
@@ -328,12 +412,13 @@ public class UserServiceImpl implements UserService {
     }
 
     /**
-     * @description 根据List\<UserRelation> 生成 List\<UserRelationVo>，优化了前一个使用for循环内做数据库查询的方式，改为了用in做查询
      * @param list
      * @param type
      * @return
+     * @description 根据List\<UserRelation> 生成 List\<UserRelationVo>，优化了前一个使用for循环内做数据库查询的方式，改为了用in做查询
      */
     private List<UserRelationVo> generateVofromUserRelations(List<UserRelation> list, String type) {
+        if (list.size() == 0) return new ArrayList<>();
         final String owner = "owner";
         List<Long> uidList = new ArrayList<>(list.size());
         List<UserRelationVo> resList = new ArrayList<>(list.size());
@@ -357,6 +442,7 @@ public class UserServiceImpl implements UserService {
                             .avatar(tmp.getAvatar())
                             .displayName(tmp.getDisplayName())
                             .email(tmp.getEmail())
+                            .uid(tmp.getUid())
                             .build();
                     UserRelationVo userRelationVo = UserRelationVo.builder()
                             .other(userVo)

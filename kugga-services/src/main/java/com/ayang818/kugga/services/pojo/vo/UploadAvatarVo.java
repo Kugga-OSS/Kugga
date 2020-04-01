@@ -6,15 +6,12 @@ import lombok.Data;
 /**
  * @author 杨丰畅
  * @description TODO
- * @date 2020/3/22 14:08
+ * @date 2020/3/28 14:57
  **/
 @Data
 @Builder
-public class UserVo implements Vo {
+public class UploadAvatarVo implements Vo {
     Integer state;
-    String userName;
-    String displayName;
-    String avatar;
-    Long uid;
-    String email;
+    String message;
+    String url;
 }
