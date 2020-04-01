@@ -1,8 +1,6 @@
 package com.ayang818.kugga.netty.websocket;
 
-import com.ayang818.kugga.netty.gateway.ConnectionUserMap;
 import com.ayang818.kugga.netty.gateway.Gateway;
-import com.ayang818.kugga.netty.gateway.UserConnectionMap;
 import io.netty.channel.ChannelDuplexHandler;
 import io.netty.channel.ChannelHandler;
 import io.netty.channel.ChannelHandlerContext;
@@ -32,14 +30,7 @@ public class CloseIdleChannelHandler extends ChannelDuplexHandler {
         if (evt instanceof IdleStateEvent) {
             IdleStateEvent event = (IdleStateEvent) evt;
             if (event.state() == IdleState.ALL_IDLE) {
-                String channelId = ctx.channel().id().asShortText();
-                String uid = Gateway.getUid(channelId);
-                if (uid != null) {
-                    Gateway.offlineGateway(channelId, uid);
-                    logger.info("用户 {} 已在网关下线", uid);
-                    chatHandler.handlerRemoved(ctx);
-                    Gateway.show();
-                }
+                chatHandler.handlerRemoved(ctx);
             }
         }
     }

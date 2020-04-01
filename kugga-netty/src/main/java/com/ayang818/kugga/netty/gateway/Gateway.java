@@ -3,6 +3,7 @@ package com.ayang818.kugga.netty.gateway;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.util.Iterator;
 import java.util.Set;
 
 /**
@@ -15,23 +16,43 @@ public class Gateway {
     private static final Logger logger = LoggerFactory.getLogger(Gateway.class);
 
     /**
-     * @description 将用户从网关中下线
+     * @description 将用户从网关中下线，这里是已经知道了channelId和它的uid的情况
      * @param channelId
      * @param uid
      */
-    public static void offlineGateway(String channelId, String uid) {
+    public static void offline(String channelId, String uid) {
         ConnectionUserMap.remove(channelId);
         UserConnectionMap.remove(uid, channelId);
+        logger.info("用户 {} 已在网关下线", uid);
     }
 
     /**
-     * @description 将用户在网关中上线
+     * @param channelId 将用户从网关中下线，这里是只知道channelId
+     */
+    public static void offline(String channelId) {
+        String uid;
+        if ((uid = Gateway.getUid(channelId)) != null) {
+            offline(channelId, uid);
+        }
+    }
+
+    /**
+     * @description 将用户在网关中上线，最多允许三个在线用户
      * @param channelId
      * @param uid
      */
-    public static void onlineGateway(String channelId, String uid) {
-        ConnectionUserMap.put(channelId, uid);
+    public static void online(String channelId, String uid) {
+        Set<String> channelIdSet = getChannelIdSet(uid);
+        if (channelIdSet.size() >= 3) {
+            // 删除一个
+            Iterator<String> iterator = channelIdSet.iterator();
+            String removeChannelId = iterator.next();
+            iterator.remove();
+            offline(removeChannelId, uid);
+        }
         UserConnectionMap.put(uid, channelId);
+        ConnectionUserMap.put(channelId, uid);
+        logger.info("用户 {} 已在网关上线", uid);
     }
 
     /**

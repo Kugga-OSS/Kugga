@@ -2,9 +2,13 @@
 
 package com.ayang818.kugga.starter
 
+import org.slf4j.LoggerFactory
+
 open class EnbededKotlin {
 
+    var logger = LoggerFactory.getLogger("EnbededKotlin");
+
     fun main() {
-        println("kotlin enbededSuccess!")
+        logger.info("kotlin enbededSuccess!")
     }
 }

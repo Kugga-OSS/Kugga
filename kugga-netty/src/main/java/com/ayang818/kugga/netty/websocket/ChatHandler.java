@@ -96,12 +96,12 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
             case MsgType.ONLINE:
                 String uid = String.valueOf(msgDto.getSenderUid());
                 // 在网关上线
-                Gateway.onlineGateway(shortId, uid);
+                Gateway.online(shortId, uid);
+                Gateway.show();
                 // 为用户设置初始为ACK消息列表
                 context.channel().attr(NON_ACKED_MAP).set(new ConcurrentHashMap<>(16));
                 // 为用户设置私有的消息消息序号，用于作为消息接收方的ACK时候的sequence id
                 context.channel().attr(SID_GENERATOR).set(new AtomicLong(0));
-                logger.info("用户 {} 已在网关上线", msgDto.getSenderUid());
                 break;
             case MsgType.NEWMSG:
                 // 消息持久化，并产生redis发布
@@ -167,8 +167,10 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
      */
     @Override
     public void handlerAdded(ChannelHandlerContext ctx) throws Exception {
-        super.handlerAdded(ctx);
         channels.add(ctx.channel());
+        channels.forEach(channel -> {
+            System.out.println(channel.id().asShortText());
+        });
         logger.info("{} channel已添加", ctx.channel().id().asShortText());
     }
 
@@ -176,15 +178,14 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
     /**
      * @param ctx
      * @throws Exception
-     * @description Handler生命周期的一部分，当Handler从某个pipeline删除时执行的动作
+     * @description Handler生命周期的一部分，当Handler从某个pipeline删除时执行的动作，这里有主动断开连接，和检测到连接不可达断开连接
      */
     @Override
     public void handlerRemoved(ChannelHandlerContext ctx) throws Exception {
-        super.handlerRemoved(ctx);
         String channelId = ctx.channel().id().asShortText();
-        if (channels.remove(ctx.channel())) {
-            logger.info("{} channel已删除", channelId);
-        }
+        channels.remove(ctx.channel());
+        Gateway.offline(channelId);
+        logger.info("{} channel已删除", channelId);
     }
 
 }
