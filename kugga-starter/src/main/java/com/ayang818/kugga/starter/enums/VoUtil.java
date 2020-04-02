@@ -19,6 +19,9 @@ public class VoUtil {
     }
 
     public static ResultDto judge(Vo vo) {
+        if (vo == null) {
+            return getFailDefault();
+        }
         if (vo.getState() == 1) {
             return Result.ok(vo);
         } else if (vo.getState() == 0) {

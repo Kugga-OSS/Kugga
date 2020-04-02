@@ -59,14 +59,19 @@ public class UserController {
 
     @ApiOperation("获取某一用户信息")
     @RequestMapping(value = "/auth_api/user", method = RequestMethod.GET)
-    public ResultDto getUser(HttpServletRequest req, HttpServletResponse res) {
+    public ResultDto getUser(HttpServletRequest req, HttpServletResponse res,
+                             @RequestParam(value = "username", required = false) String username) {
+        if (username != null) {
+            UserVo userVo = userService.queryUser(username);
+            return VoUtil.judge(userVo);
+        }
         Long uid = (Long) req.getAttribute("uid");
         if (uid == null) return VoUtil.getFailDefault();
         UserVo userVo = userService.queryUser(uid);
         return VoUtil.judge(userVo);
     }
 
-    @ApiOperation("根据用户名/昵称搜索用户")
+    @ApiOperation("根据用户名/昵称搜索用户列表")
     @RequestMapping(value = "/auth_api/user/search", method = RequestMethod.POST)
     public ResultDto searchUser(@RequestParam("keyword") String keyword) {
         SearchUserVo searchUserVo = userService.searchByKeyword(keyword);
@@ -75,7 +80,8 @@ public class UserController {
 
     @ApiOperation("某一位用户向另一位用户发送好友请求")
     @RequestMapping(value = "/auth_api/user/add", method = RequestMethod.POST)
-    public ResultDto addNewFriend(HttpServletRequest req, @RequestParam("otherUsername") String username) {
+    public ResultDto addNewFriend(HttpServletRequest req,
+                                  @RequestParam("otherUsername") String username) {
         Long uid = (Long) req.getAttribute("uid");
         AddFriendResVo addFriendResVo = userService.addNewFriend(uid, username);
         return VoUtil.judge(addFriendResVo);
@@ -109,7 +115,8 @@ public class UserController {
 
     @ApiOperation("用户上传头像")
     @RequestMapping(value = "/auth_api/user/avatar", method = RequestMethod.POST)
-    public ResultDto uploadAvatar(HttpServletRequest req, @RequestParam("file") MultipartFile file) {
+    public ResultDto uploadAvatar(HttpServletRequest req,
+                                  @RequestParam("file") MultipartFile file) {
         Long uid = (Long) req.getAttribute("uid");
         UploadAvatarVo uploadAvatarVo = userService.uploadAvatar(uid, file);
         return VoUtil.judge(uploadAvatarVo);

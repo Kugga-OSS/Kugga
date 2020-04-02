@@ -1,5 +1,6 @@
 package com.ayang818.kugga.services.service.impl;
 
+import com.ayang818.kugga.services.enums.MsgType;
 import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.model.*;
 import com.ayang818.kugga.utils.JsonUtil;
@@ -17,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
+import java.math.BigInteger;
 import java.util.Date;
 import java.util.List;
 
@@ -123,6 +125,7 @@ public class MsgServiceImpl implements MsgService {
                 .receiverUid(rUid)
                 .createTime(currentTime)
                 .type(contentType)
+                .msgType(MsgType.NEWMSG)
                 .build();
 
         /* 将消息发布到Redis中 */

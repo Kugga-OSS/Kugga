@@ -15,9 +15,11 @@ import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
 import com.ayang818.kugga.utils.UploadUtil;
+import com.fasterxml.jackson.databind.deser.BuilderBasedDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
@@ -26,6 +28,7 @@ import javax.management.relation.Relation;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.rmi.server.UID;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
@@ -397,6 +400,25 @@ public class UserServiceImpl implements UserService {
                 .message("更换头像成功")
                 .url(avatarUrl)
                 .build();
+    }
+
+    @Override
+    public UserVo queryUser(String username) {
+        UserExample example = new UserExample();
+        example.createCriteria().andUsernameEqualTo(username);
+        List<User> users = userMapper.selectByExample(example);
+        if (users != null && users.size() == 1) {
+            User user = users.get(0);
+            return UserVo.builder()
+                    .uid(user.getUid())
+                    .email(user.getEmail())
+                    .avatar(user.getAvatar())
+                    .displayName(user.getDisplayName())
+                    .userName(user.getUsername())
+                    .state(1)
+                    .build();
+        }
+        return null;
     }
 
     private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {

@@ -18,6 +18,7 @@ public class MsgVo {
     Long senderUid;
     Long receiverUid;
     Integer type;
+    Integer msgType;
     Date createTime;
     String senderName;
     String receiverName;

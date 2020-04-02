@@ -99,6 +99,7 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
                 Gateway.online(shortId, uid);
                 Gateway.show();
                 // 为用户设置初始为ACK消息列表
+
                 context.channel().attr(NON_ACKED_MAP).set(new ConcurrentHashMap<>(16));
                 // 为用户设置私有的消息消息序号，用于作为消息接收方的ACK时候的sequence id
                 context.channel().attr(SID_GENERATOR).set(new AtomicLong(0));

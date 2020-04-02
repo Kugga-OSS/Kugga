@@ -68,5 +68,18 @@ public interface UserService {
      */
     FriendListVo fetchFriendList(Long uid);
 
+    /**
+     * @description 上传头像
+     * @param uid
+     * @param avatarFile
+     * @return
+     */
     UploadAvatarVo uploadAvatar(Long uid, MultipartFile avatarFile);
+
+    /**
+     * @description 通过用户名搜索用户
+     * @param username
+     * @return
+     */
+    UserVo queryUser(String username);
 }
