@@ -2,6 +2,7 @@ package com.ayang818.kugga.netty.websocket;
 
 import com.ayang818.kugga.netty.enums.MsgType;
 import com.ayang818.kugga.netty.gateway.Gateway;
+import com.ayang818.kugga.services.global.CustomizeException;
 import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
@@ -86,9 +87,15 @@ public class ChatHandler extends SimpleChannelInboundHandler<TextWebSocketFrame>
                                 TextWebSocketFrame textWebSocketFrame) throws Exception {
         String content = textWebSocketFrame.text();
         // 此处 logger 需要在生产环境中删除
-        logger.info("收到 {} channel的消息 {}", context.channel().id().asShortText(), content);
+        // logger.info("收到 {} channel的消息 {}", context.channel().id().asShortText(), content);
         Gson paser = JsonUtil.getPaser();
-        MsgDto msgDto = JsonUtil.fromJson(content, MsgDto.class);
+        MsgDto msgDto = null;
+        try {
+            msgDto = JsonUtil.fromJson(content, MsgDto.class);
+        } catch(Exception e) {
+            throw new CustomizeException("非法的消息对象，给爷爬！");
+        }
+        if (msgDto == null) return ;
         // 这条消息的目的，详情见MsgType中的几个枚举类
         int msgType = msgDto.getMsgType();
         String shortId = context.channel().id().asShortText();

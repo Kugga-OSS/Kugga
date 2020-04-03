@@ -29,7 +29,8 @@ public class NewMessageListener implements MessageListener {
     public void onMessage(Message message, byte[] bytes) {
         String topic = stringRedisSerializer.deserialize(message.getChannel());
         String msgVoString = new String(message.getBody());
-        logger.info("Message Received --> pattern: {}，topic:{}，message: {}", new String(bytes), topic, msgVoString);
+        // 生产环境中删除
+        // logger.info("Message Received --> pattern: {}，topic:{}，message: {}", new String(bytes), topic, msgVoString);
         MsgVo msgVo = JsonUtil.fromJson(msgVoString, MsgVo.class);
 
         /* 通过redis的发布订阅模式推送消息到消息接收方 */

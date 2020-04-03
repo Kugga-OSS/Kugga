@@ -12,5 +12,3 @@ export ALI_KEY_SECRET="阿里云RAM Key Secret"
 export BUCKET_NAME="<OSS Bucket桶的名称>"
 export AVATAR_FOLDER_URL="<头像文件存储路径，参考 "avatar/" >"
 ' >> /etc/profile
-
-source /etc/profile
