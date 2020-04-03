@@ -9,7 +9,10 @@ import com.ayang818.kugga.utils.EncryptUtil;
 import io.swagger.annotations.Api;
 import io.swagger.annotations.ApiOperation;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
@@ -122,8 +125,12 @@ public class UserController {
         return VoUtil.judge(uploadAvatarVo);
     }
 
-    @RequestMapping(value = "/auth_api/chat", method = RequestMethod.GET)
-    public String chat() {
-        return "hello, you can reach here";
+    @ApiOperation("拉取最近联系人的列表")
+    @RequestMapping(value = "/auth_api/user/recentChat", method = RequestMethod.GET)
+    public ResultDto pullRecentChatList(HttpServletRequest req) {
+        Long uid = (Long) req.getAttribute("uid");
+        FriendListVo friendListVo = userService.pullRecentChatList(uid);
+        return VoUtil.judge(friendListVo);
     }
+
 }

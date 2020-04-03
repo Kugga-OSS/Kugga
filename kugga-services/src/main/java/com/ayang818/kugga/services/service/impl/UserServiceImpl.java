@@ -3,6 +3,7 @@ package com.ayang818.kugga.services.service.impl;
 import com.ayang818.kugga.services.enums.UserRelationStatus;
 import com.ayang818.kugga.services.mapper.UserExtMapper;
 import com.ayang818.kugga.services.mapper.UserMapper;
+import com.ayang818.kugga.services.mapper.UserRelationExtMapper;
 import com.ayang818.kugga.services.mapper.UserRelationMapper;
 import com.ayang818.kugga.services.pojo.JwtSubject;
 import com.ayang818.kugga.services.pojo.model.User;
@@ -15,24 +16,16 @@ import com.ayang818.kugga.utils.EncryptUtil;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.JwtUtil;
 import com.ayang818.kugga.utils.UploadUtil;
-import com.fasterxml.jackson.databind.deser.BuilderBasedDeserializer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.autoconfigure.info.ProjectInfoProperties;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 import org.springframework.web.multipart.MultipartFile;
 
-import javax.management.relation.Relation;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.rmi.server.UID;
-import java.util.ArrayList;
-import java.util.Date;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -53,6 +46,9 @@ public class UserServiceImpl implements UserService {
 
     @Autowired
     UserRelationMapper userRelationMapper;
+
+    @Autowired
+    UserRelationExtMapper userRelationExtMapper;
 
     @Autowired
     JwtUtil jwtUtil;
@@ -419,6 +415,33 @@ public class UserServiceImpl implements UserService {
                     .build();
         }
         return null;
+    }
+
+    @Override
+    public FriendListVo pullRecentChatList(Long uid) {
+        List<Long> otherUidList = userRelationExtMapper.selectRecentChatUid(uid);
+        if (otherUidList == null || otherUidList.size() == 0) {
+            return FriendListVo.builder()
+                    .friendList(new ArrayList<>())
+                    .state(1)
+                    .build();
+        }
+        List<User> users = userExtMapper.selectAllByUid(otherUidList);
+        List<UserVo> res = new LinkedList<>();
+        for (User user : users) {
+            UserVo userVo = UserVo.builder()
+                    .userName(user.getUsername())
+                    .displayName(user.getDisplayName())
+                    .avatar(user.getAvatar())
+                    .uid(user.getUid())
+                    .email(user.getEmail())
+                    .build();
+            res.add(userVo);
+        }
+        return FriendListVo.builder()
+                .state(1)
+                .friendList(res)
+                .build();
     }
 
     private void updateUserRelationStatus(Long ownerUid, Long otherUid, Byte status, Date current) {

@@ -1,6 +1,7 @@
 package com.ayang818.kugga.services.service;
 
 import com.ayang818.kugga.services.pojo.MsgDto;
+import com.ayang818.kugga.services.pojo.vo.MsgListVo;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 
 import java.util.List;
@@ -17,8 +18,12 @@ public interface MsgService {
      */
     MsgVo sendMsg(MsgDto msgDto);
 
+
     /**
-     * 获取消息
+     * @description 拉取某两人之间的消息
+     * @param ownerUid
+     * @param otherUid
+     * @return
      */
-    List<MsgVo> fetchMsg();
+    MsgListVo fetchMsg(Long ownerUid, Long otherUid);
 }

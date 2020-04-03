@@ -1,14 +1,13 @@
 package com.ayang818.kugga.services.service.impl;
 
 import com.ayang818.kugga.services.enums.MsgType;
+import com.ayang818.kugga.services.mapper.*;
 import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.model.*;
+import com.ayang818.kugga.services.pojo.vo.MsgListVo;
+import com.ayang818.kugga.services.pojo.vo.MsgTmp;
 import com.ayang818.kugga.utils.JsonUtil;
 import com.ayang818.kugga.utils.enums.ContentType;
-import com.ayang818.kugga.services.mapper.MessageMapper;
-import com.ayang818.kugga.services.mapper.MessageRelationMapper;
-import com.ayang818.kugga.services.mapper.UserMapper;
-import com.ayang818.kugga.services.mapper.UserRelationMapper;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 import com.ayang818.kugga.services.service.MsgService;
 import com.ayang818.kugga.utils.enums.RedisKeyPartConstants;
@@ -19,7 +18,9 @@ import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
 import java.math.BigInteger;
+import java.util.ArrayList;
 import java.util.Date;
+import java.util.LinkedList;
 import java.util.List;
 
 /**
@@ -34,6 +35,9 @@ public class MsgServiceImpl implements MsgService {
 
     @Autowired
     MessageMapper messageMapper;
+
+    @Autowired
+    MsgExtMapper msgExtMapper;
 
     @Autowired
     MessageRelationMapper messageRelationMapper;
@@ -135,7 +139,35 @@ public class MsgServiceImpl implements MsgService {
     }
 
     @Override
-    public List<MsgVo> fetchMsg() {
-        return null;
+    public MsgListVo fetchMsg(Long ownerUid, Long otherUid) {
+        /*
+        * 这里需要的是senderUid，receiverUid，mid，content， createTime这几项最基本的信息
+        */
+        List<MsgTmp> msgTmpList = msgExtMapper.fetchMsg(ownerUid, otherUid);
+        if (msgTmpList == null || msgTmpList.size() == 0) {
+            return MsgListVo.builder()
+                    .state(1)
+                    .msgList(new ArrayList<>())
+                    .build();
+        }
+        List<MsgVo> msgVoList = new LinkedList<>();
+        for (MsgTmp msgTmp : msgTmpList) {
+            MsgVo msgVo = MsgVo.builder()
+                    .createTime(msgTmp.getCreateTime())
+                    .mid(msgTmp.getMid())
+                    .content(msgTmp.getContent())
+                    // 要是这条消息关系的拥有者是发送方，那么这条关系的Owner是sender，Other是receiver
+                    .receiverUid(msgTmp.getSender() == 1 ? msgTmp.getOtherUid() :
+                            msgTmp.getOwnerUid())
+                    .senderUid(msgTmp.getSender() == 1 ? msgTmp.getOwnerUid() :
+                            msgTmp.getOtherUid())
+                    .build();
+            msgVoList.add(msgVo);
+        }
+        return MsgListVo.builder()
+                .msgList(msgVoList)
+                .state(1)
+                .build();
     }
+
 }
