@@ -29,6 +29,7 @@ public class MsgController {
     @ApiOperation("用户拉取消息接口")
     @RequestMapping(value = "/auth_api/msg", method = RequestMethod.GET)
     public ResultDto pullMsg(HttpServletRequest req, @RequestParam("otherUid") Long otherUid) {
+
         Long ownerUid = (Long) req.getAttribute("uid");
         MsgListVo msgListVo = msgService.fetchMsg(ownerUid, otherUid);
         return VoUtil.judge(msgListVo);
