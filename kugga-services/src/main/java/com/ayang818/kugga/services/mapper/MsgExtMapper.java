@@ -1,6 +1,7 @@
 package com.ayang818.kugga.services.mapper;
 
 import com.ayang818.kugga.services.pojo.vo.MsgTmp;
+import org.apache.ibatis.annotations.Param;
 import org.apache.ibatis.annotations.Result;
 import org.apache.ibatis.annotations.Results;
 import org.apache.ibatis.annotations.Select;
@@ -26,5 +27,5 @@ public interface MsgExtMapper {
             @Result(property="sender",column="is_sender"),
             @Result(property="createTime",column="create_time")
     })
-    List<MsgTmp> fetchMsg(Long ownerUid, Long otherUid);
+    List<MsgTmp> fetchMsg(@Param("ownerUid") Long ownerUid,@Param("otherUid") Long otherUid);
 }
