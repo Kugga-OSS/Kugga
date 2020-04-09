@@ -12,7 +12,6 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class KuggaStarterApplication {
 
     public static void main(String[] args) {
-        new EnbededKotlin().main();
         SpringApplication.run(KuggaStarterApplication.class, args);
     }
 
