@@ -4,6 +4,9 @@
 
 [README-EN](README.md)
 
+## 样例
+这个网站就是基于这个项目搭建的 ———— [kugga-app](https://kugga.ayang818.top)。
+
 ## 如何开始
 把这个项目拉到你的本地
 ```bash

@@ -4,6 +4,9 @@
 
 [中文简介](README-ZH.md)
 
+## Example
+This site is based on this project ———— [kugga-app](https://kugga.ayang818.top).
+
 ## How to start
 Clone this repository to your machine.
 ```bash
@@ -25,7 +28,7 @@ OSS_ENDPOINT=""                  // aliyun OSS Bucket` endpoint
 ALI_KEY_ID=""                    // aliyun RAM Key Id
 ALI_KEY_SECRET=""                // aliyun RAM Key Secret
 BUCKET_NAME=""                   // OSS Bucket name
-AVATAR_FOLDER_URL="< >"          // avatar storage location on ${BUCKET_NAME}，for example
+AVATAR_FOLDER_URL=""          // avatar storage location on ${BUCKET_NAME}，for example
  —— "avatar/"
 ```
 
