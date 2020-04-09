@@ -22,6 +22,11 @@ DATABASE_PASSWORD="123"          // mysql server password
 REDIS_HOST="localhost"           // redis server id
 REDIS_PORT="6379"                // redis server post
 JWT_SECRET_KEY="random_string"   // json web token`s secret key
+OSS_ENDPOINT=""                  // 阿里云OSS 对应Bucket所在的地域域名
+ALI_KEY_ID=""                    // 阿里云RAM Key Id
+ALI_KEY_SECRET=""                // 阿里云RAM Key Secret
+BUCKET_NAME=""                   // OSS Bucket桶的名称
+AVATAR_FOLDER_URL=""             // 头像文件存储路径，参考 "avatar/"
 ```
 
 如果你想要在linux机器上运行```kugga```，你可以修改位于根目录的```init_variable.sh```文件里的配置，然后将这个文件传输到你的linux机器，

@@ -21,6 +21,12 @@ DATABASE_PASSWORD="123"          // mysql server password
 REDIS_HOST="localhost"           // redis server id
 REDIS_PORT="6379"                // redis server post
 JWT_SECRET_KEY="random_string"   // json web token`s secret key
+OSS_ENDPOINT=""                  // aliyun OSS Bucket` endpoint
+ALI_KEY_ID=""                    // aliyun RAM Key Id
+ALI_KEY_SECRET=""                // aliyun RAM Key Secret
+BUCKET_NAME=""                   // OSS Bucket name
+AVATAR_FOLDER_URL="< >"          // avatar storage location on ${BUCKET_NAME}，for example
+ —— "avatar/"
 ```
 
 if you want to deploy it to a linux machine, you can modify the ```init_variable.sh```(on the root of the project) to your own setting, and transfer this file to your 
