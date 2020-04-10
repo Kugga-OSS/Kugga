@@ -4,8 +4,6 @@ import com.ayang818.kugga.services.pojo.MsgDto;
 import com.ayang818.kugga.services.pojo.vo.MsgListVo;
 import com.ayang818.kugga.services.pojo.vo.MsgVo;
 
-import java.util.List;
-
 /**
  * @author 杨丰畅
  * @description 消息对象的操作

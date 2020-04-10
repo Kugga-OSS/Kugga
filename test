@@ -1,0 +1,12 @@
+/**
+ * @author 杨丰畅
+ * @description TODO
+ * @date 2020/4/9 22:36
+ **/
+public class Main {
+    public static void main(String[] args) throws InterruptedException {
+        while (true) {
+            Thread.sleep(1000);
+        }
+    }
+}
