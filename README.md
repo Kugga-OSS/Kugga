@@ -1,6 +1,6 @@
 # Kugga
 
-[![CircleCI](https://circleci.com/gh/Kugga-OSS/Kugga/tree/dev.svg?style=svg)](https://circleci.com/gh/Kugga-OSS/Kugga/tree/dev)
+[![Build Status](https://dev.azure.com/ayang818/Kugga/_apis/build/status/Kugga-OSS.Kugga?branchName=master)](https://dev.azure.com/ayang818/Kugga/_build/latest?definitionId=2&branchName=master)
 
 [中文简介](README-ZH.md)
 
