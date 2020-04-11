@@ -36,9 +36,9 @@ RUN mvn clean install
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
-ARG JAR_FILE=$HOME/kugga-starter/target/*.jar
+ARG JAR_FILE=kugga-starter/target/*.jar
 
-COPY ${JAR_FILE} app.jar
+COPY kugga-starter/target/*.jar app.jar
 
 EXPOSE 5555
 EXPOSE 10086
