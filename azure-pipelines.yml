@@ -1,0 +1,63 @@
+# Starter pipeline
+# Start with a minimal pipeline that you can customize to build and deploy your code.
+# Add steps that build, run tests, deploy, and more:
+# https://aka.ms/yaml
+
+trigger:
+  - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  imageName: 'kugga-backend'
+  DOCKER_BUILDKIT: 1
+
+steps:
+  - script: |
+      docker build -f Dockerfile -t $(imageName) .
+      docker login -u $(aliusername) -p $(alipassword) registry.cn-hangzhou.aliyuncs.com
+      docker tag $(imageName):latest registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
+      docker push registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
+
+  - task: SSH@0
+    displayName: 'deploy to remote machine'
+    inputs:
+      sshEndpoint: 'huaweicloud'
+      runOptions: inline
+
+      inline: |
+        containers1=$(docker ps -q -a --filter name=kugga-backend)
+        if test -n "$containers1"; then
+         docker rm -f $(docker ps -q -a --filter name=kugga-backend) >> /dev/null 2>&1
+         rc=$?
+         if [[ $rc != 0 ]];
+         then
+           echo 'failed to remove container...'
+           exit $rc;
+         else
+           echo 'success to remove container...'
+         fi
+        fi
+
+        docker pull registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest >> /dev/null
+        2>&1
+        rc=$?
+        if [[ $rc != 0 ]];
+        then
+         echo 'failed to pull container...'
+         exit $rc;
+        else
+         echo 'success to pull container...'
+        fi
+
+        docker run -d -p 567:80 --name=kugga-backend --restart=always registry.cn-hangzhou.aliyuncs
+        .com/ayang818/kugga-backend:latest >> /dev/null 2>&1
+        rc=$?
+        if [[ $rc != 0 ]];
+        then
+         echo 'failed to run container...'
+         exit $rc;
+        else
+         echo 'success to run container...'
+        fi
