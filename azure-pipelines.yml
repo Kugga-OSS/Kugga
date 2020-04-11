@@ -16,6 +16,7 @@ variables:
 steps:
   - script: |
       docker build -f Dockerfile -t $(imageName) .
+      docker images
       docker login -u $(aliusername) -p $(alipassword) registry.cn-hangzhou.aliyuncs.com
       docker tag $(imageName):latest registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
       docker push registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
