@@ -11,25 +11,25 @@ pool:
 
 variables:
   imageName: 'kugga-backend'
+  finalImageName: 'registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend'
+  version: '1.0'
 
 steps:
   - script: |
-      echo $(DATABASE_HOST)
-#      docker build -f Dockerfile -t $(imageName) .
+      echo 'hello world'
+#      docker build -f Dockerfile -t $(imageName):$(version) .
 #      docker images
 #      docker login -u $(aliusername) -p $(alipassword) registry.cn-hangzhou.aliyuncs.com
-#      docker tag $(imageName):latest registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
-#      docker push registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
+#      docker tag $(imageName):$(version) $(finalImageName):$(version)
+#      docker push $(finalImageName):$(version)
 
-  - task: SSH@0
-    displayName: 'deploy to remote machine'
-    inputs:
-      sshEndpoint: 'huaweicloud'
-      runOptions: inline
-
-      inline: |
-        env
-        cat /etc/profile
+#  - task: SSH@0
+#    displayName: 'deploy to remote machine'
+#    inputs:
+#      sshEndpoint: 'huaweicloud'
+#      runOptions: inline
+#
+#      inline: |
 #        containers1=$(docker ps -q -a --filter name=kugga-backend)
 #        if test -n "$containers1"; then
 #         docker rm -f $(docker ps -q -a --filter name=kugga-backend) >> /dev/null 2>&1
