@@ -38,9 +38,13 @@ RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezo
 
 ARG JAR_FILE=kugga-starter/target/*.jar
 
-COPY ${JAR_FILE} app.jar
+RUN cp ${HOME}/${JAR_FILE} ${HOME}/app.jar
+
+# RUN echo '#!/bin/sh\r\njava -Djava.security.egd=file:/dev/./urandom -jar ${HOME}/app.jar' >> /usr/local/bin/docker-entrypoint.sh
+# RUN chmod u+x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 5555
 EXPOSE 10086
+
 # 这里需要在启动容器时将必备环境变量通过-e参数传进去
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","app.jar"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app/app.jar"]

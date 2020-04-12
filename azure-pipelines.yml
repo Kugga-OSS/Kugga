@@ -11,11 +11,11 @@ pool:
 
 variables:
   imageName: 'kugga-backend'
-  DOCKER_BUILDKIT: 1
 
 steps:
   - script: |
       docker build -f Dockerfile -t $(imageName) .
+      docker images
       docker login -u $(aliusername) -p $(alipassword) registry.cn-hangzhou.aliyuncs.com
       docker tag $(imageName):latest registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
       docker push registry.cn-hangzhou.aliyuncs.com/ayang818/kugga-backend:latest
@@ -51,8 +51,7 @@ steps:
          echo 'success to pull container...'
         fi
 
-        docker run -d -p 567:80 --name=kugga-backend --restart=always registry.cn-hangzhou.aliyuncs
-        .com/ayang818/kugga-backend:latest >> /dev/null 2>&1
+        docker run -d --name kugga-backend -e DATABASE_HOST=${DATABASE_HOST} -e DATABASE_PORT=${DATABASE_PORT} -e DATABASE_USERNAME=${DATABASE_USERNAME} -e DATABASE_PASSWORD=${DATABASE_PASSWORD} -e REDIS_HOST=${REDIS_HOST}  -e REDIS_PORT=${REDIS_PORT} -e JWT_SECRET_KEY=${JWT_SECRET_KEY} -e OSS_ENDPOINT=${OSS_ENDPOINT} -e ALI_KEY_ID=${ALI_KEY_ID} -e ALI_KEY_SECRET=${ALI_KEY_SECRET} -e BUCKET_NAME=${BUCKET_NAME} -e AVATAR_FOLDER_URL=${AVATAR_FOLDER_URL}  -p 10086:10086 -p 5555:5555 kugga-backend >> /dev/null 2>&1
         rc=$?
         if [[ $rc != 0 ]];
         then
