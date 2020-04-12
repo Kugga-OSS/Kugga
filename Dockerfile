@@ -40,11 +40,11 @@ ARG JAR_FILE=kugga-starter/target/*.jar
 
 RUN cp ${HOME}/${JAR_FILE} ${HOME}/app.jar
 
-RUN pwd
-
-RUN ls -al
+# RUN echo '#!/bin/sh\r\njava -Djava.security.egd=file:/dev/./urandom -jar ${HOME}/app.jar' >> /usr/local/bin/docker-entrypoint.sh
+# RUN chmod u+x /usr/local/bin/docker-entrypoint.sh
 
 EXPOSE 5555
 EXPOSE 10086
+
 # 这里需要在启动容器时将必备环境变量通过-e参数传进去
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","${HOME}/app.jar"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","/app/app.jar"]
