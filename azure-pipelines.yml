@@ -31,8 +31,8 @@ steps:
         echo ${DATABASE_HOST}
         echo '2'
         echo $DATABASE_HOST
-        ehco '3'
-        ehco $(DATABASE_HOST)
+        echo '3'
+        echo $(DATABASE_HOST)
 #        containers1=$(docker ps -q -a --filter name=kugga-backend)
 #        if test -n "$containers1"; then
 #         docker rm -f $(docker ps -q -a --filter name=kugga-backend) >> /dev/null 2>&1
