@@ -50,6 +50,7 @@ chmod u+x init_variable.sh
 我推荐你使用[docker](https://www.docker.com)来安装MySQL和redis 或者直接使用你的远程Linux主机
 
 ## 运行
+**最基本的方式**
 在做完上述的的工作后，运行以下脚本来初始化数据库并运行此服务 ！！！
 ```bash
 cd kugga-services
@@ -65,6 +66,9 @@ cd kugga-starter/target
 java -jar kugga-starter-1.0.0.jar // 运行打出来的可执行jar包
 ```
 如果你不想使用[kugga.app](https://github.com/Kugga-OSS/Kugga.App)来交互。在浏览器中打开```example/client.html```, 你可以使用这个html demo来和服务端做交互，虽然很简陋就是了~
+
+**使用Docker**
+Docker-compose 一键安装脚本已经在准备了！
 
 ## 协议
 MIT 协议

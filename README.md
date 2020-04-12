@@ -50,6 +50,7 @@ You need
 I recommend you could install MySQL and Redis with [docker](https://www.docker.com/) or just use remote linux machine.
 
 ## Run it
+**Basic way**
 After finishing all the prepare works, run the following command to init your mysql database and start server !!!
 ```bash
 cd kugga-services
@@ -66,6 +67,8 @@ java -jar kugga-starter-1.0.0.jar
 ```
 If you don`t want to interactive with [kugga.app](https://github.com/Kugga-OSS/Kugga.App). open ```examlpe/client.html``` in your browser, you could use this demo to interactive with this server.
 
+**Use Docker**
+Docker-compose is preparing!
 
 More development plan, you could see in [here](https://github.com/Kugga-OSS/Prepare-Kugga). 
 
