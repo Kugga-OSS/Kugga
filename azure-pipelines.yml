@@ -27,12 +27,7 @@ steps:
       runOptions: inline
 
       inline: |
-        echo '1'
-        echo ${DATABASE_HOST}
-        echo '2'
-        echo $DATABASE_HOST
-        echo '3'
-        echo $(DATABASE_HOST)
+        env
 #        containers1=$(docker ps -q -a --filter name=kugga-backend)
 #        if test -n "$containers1"; then
 #         docker rm -f $(docker ps -q -a --filter name=kugga-backend) >> /dev/null 2>&1
