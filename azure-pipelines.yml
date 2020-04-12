@@ -14,7 +14,7 @@ variables:
 
 steps:
   - script: |
-      set DATABASE_HOST=$(DATABASE_HOST)
+      echo $(DATABASE_HOST)
 #      docker build -f Dockerfile -t $(imageName) .
 #      docker images
 #      docker login -u $(aliusername) -p $(alipassword) registry.cn-hangzhou.aliyuncs.com
@@ -29,6 +29,7 @@ steps:
 
       inline: |
         env
+        cat /etc/profile
 #        containers1=$(docker ps -q -a --filter name=kugga-backend)
 #        if test -n "$containers1"; then
 #         docker rm -f $(docker ps -q -a --filter name=kugga-backend) >> /dev/null 2>&1
