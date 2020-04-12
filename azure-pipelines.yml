@@ -25,4 +25,4 @@ steps:
     inputs:
       sshEndpoint: 'huaweicloud'
       runOptions: script
-      scriptPath: /root/kugga-deploy/deploy.sh
+      scriptPath: /docker/shell/deploy.sh
