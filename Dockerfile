@@ -36,7 +36,7 @@ RUN mvn clean install
 ENV TZ=Asia/Shanghai
 RUN ln -snf /usr/share/zoneinfo/${TZ} /etc/localtime && echo ${TZ} > /etc/timezone
 
-ARG JAR_FILE=kugga-starter/target/kugga-starter-1.0.0.jar
+ARG JAR_FILE=kugga-starter/target/*.jar
 
 RUN cp ${HOME}/${JAR_FILE} ${HOME}/app.jar
 
@@ -47,4 +47,4 @@ RUN ls -al
 EXPOSE 5555
 EXPOSE 10086
 # 这里需要在启动容器时将必备环境变量通过-e参数传进去
-ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","app.jar"]
+ENTRYPOINT ["java","-Djava.security.egd=file:/dev/./urandom","-jar","${HOME}/app.jar"]
