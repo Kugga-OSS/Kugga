@@ -17,6 +17,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
+import java.util.Objects;
 import java.util.UUID;
 
 /**
@@ -131,6 +132,29 @@ public class UserController {
         Long uid = (Long) req.getAttribute("uid");
         FriendListVo friendListVo = userService.pullRecentChatList(uid);
         return VoUtil.judge(friendListVo);
+    }
+
+    @ApiOperation("修改密码接口")
+    @RequestMapping(value = "/auth_api/user/password", method = RequestMethod.POST)
+    public ResultDto changePass(HttpServletRequest req,
+                                @RequestParam("originPass") String originPass,
+                                @RequestParam("newPass") String newPass) {
+        Long uid = (Long) req.getAttribute("uid");
+        GeneralVo generalVo = userService.changePass(uid, originPass, newPass);
+        return VoUtil.judge(generalVo);
+    }
+
+    @ApiOperation("修改昵称/邮箱接口")
+    @RequestMapping(value = "/auth_api/user/nameOrEmail", method = RequestMethod.POST)
+    public ResultDto changeDisplayName(HttpServletRequest req,
+                                       @RequestParam(value = "displayName", required = false) String displayName,
+                                       @RequestParam(value = "email", required = false) String email) {
+        Long uid = (Long) req.getAttribute("uid");
+        if ((displayName == null || "".equals(displayName)) && (email == null || "".equals(email))) {
+            return VoUtil.getFailDefault();
+        }
+        GeneralVo generalVo = userService.changeDisplayNameOrEmail(uid, displayName, email);
+        return VoUtil.judge(generalVo);
     }
 
 }

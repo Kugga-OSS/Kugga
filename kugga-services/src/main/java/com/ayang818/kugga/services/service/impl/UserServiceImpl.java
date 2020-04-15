@@ -25,7 +25,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.LinkedList;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -441,6 +444,41 @@ public class UserServiceImpl implements UserService {
         return FriendListVo.builder()
                 .state(1)
                 .friendList(res)
+                .build();
+    }
+
+    @Override
+    public GeneralVo changePass(Long uid, String originPass, String newPass) {
+        User user = userMapper.selectByPrimaryKey(uid);
+        Boolean isEquals = EncryptUtil.compare(originPass, user.getSalt(), user.getPassword());
+        if (!isEquals) {
+            return GeneralVo.builder()
+                    .state(0)
+                    .message("原密码错误，修改密码失败")
+                    .build();
+        }
+        String newEncryptedPass = EncryptUtil.encrypt(originPass, user.getSalt());
+        user.setPassword(newEncryptedPass);
+        userMapper.updateByPrimaryKeySelective(user);
+        return GeneralVo.builder()
+                .state(1)
+                .message("修改密码成功")
+                .build();
+    }
+
+    @Override
+    public GeneralVo changeDisplayNameOrEmail(Long uid, String displayName, String email) {
+        User user = userMapper.selectByPrimaryKey(uid);
+        if (!"".equals(displayName)) {
+            user.setDisplayName(displayName);
+        }
+        if (!"".equals(email)) {
+            user.setEmail(email);
+        }
+        userMapper.updateByPrimaryKeySelective(user);
+        return GeneralVo.builder()
+                .state(1)
+                .message("修改信息成功")
                 .build();
     }
 

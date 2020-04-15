@@ -91,4 +91,21 @@ public interface UserService {
      * @description 拉取最近联系人
      */
     FriendListVo pullRecentChatList(Long uid);
+
+    /**
+     * @description 修改密码
+     * @param uid
+     * @param originPass
+     * @param newPass
+     * @return
+     */
+    GeneralVo changePass(Long uid, String originPass, String newPass);
+
+    /**
+     * @description 修改昵称
+     * @param uid
+     * @param displayName
+     * @return
+     */
+    GeneralVo changeDisplayNameOrEmail(Long uid, String displayName, String email);
 }
