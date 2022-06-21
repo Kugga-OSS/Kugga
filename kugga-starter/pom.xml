@@ -16,7 +16,7 @@
     <properties>
         <project.apiVersion>${project.version}</project.apiVersion>
         <maven-resource-plugin.version>3.0.2</maven-resource-plugin.version>
-        <mysql-connector.version>8.0.16</mysql-connector.version>
+        <mysql-connector.version>8.0.28</mysql-connector.version>
         <swagger.version>2.9.2</swagger.version>
     </properties>
 
