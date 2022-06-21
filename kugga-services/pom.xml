@@ -12,7 +12,7 @@
     <artifactId>kugga-services</artifactId>
 
     <properties>
-        <mysql-connector.version>8.0.16</mysql-connector.version>
+        <mysql-connector.version>8.0.28</mysql-connector.version>
         <mybatis-generator.version>1.3.7</mybatis-generator.version>
         <flyway-plugin.version>6.0.7</flyway-plugin.version>
         <maven-resource-plugin.version>3.0.2</maven-resource-plugin.version>
